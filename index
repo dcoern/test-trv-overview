@@ -1,0 +1,3179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revenue Command — Jul 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --panel:#FFFFFF;
+    --panel-2:#F6F8FB;
+    --line:#E3E8EF;
+    --hi:#111827;
+    --muted:#5B6678;
+    --muted-2:#8A94A6;
+    --green:#059669;
+    --red:#DC2626;
+    --amber:#B45309;
+    --teal:#0E7490;
+    --grid: rgba(15,23,42,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--hi);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  ::selection{background:rgba(14,116,144,0.25);}
+
+  /* ---------- Page tabs (Revenue Dashboard / Report Overview) ---------- */
+  .page-tabs{
+    display:flex; align-items:center; gap:6px; padding:12px 32px; background:#F6F8FB;
+    border-bottom:1px solid var(--line);
+  }
+  .page-tab{
+    padding:9px 20px; border-radius:10px; background:transparent; border:1px solid transparent;
+    color:var(--muted); font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; cursor:pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .page-tab:hover{ color:var(--hi); border-color:var(--line); }
+  .page-tab.active{ background:var(--panel); color:var(--hi); border-color:var(--line); box-shadow:0 0 0 1px rgba(14,116,144,0.25) inset; }
+  .page-tab.active::after{ content:''; }
+  @media (max-width:640px){ .page-tabs{ padding:10px 18px; } .page-tab{ padding:8px 14px; font-size:12.5px; } }
+
+  /* ---------- Report Overview page ---------- */
+  .report-header{ padding:24px 32px 16px; border-bottom:1px solid var(--line); }
+  .report-header h1{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:24px; margin:2px 0 0; letter-spacing:-0.01em; }
+  .report-section{ padding:24px 32px; border-bottom:1px solid var(--line); }
+  .report-section:last-child{ border-bottom:none; }
+  .report-section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .report-section-head h2{ font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; margin:0; }
+  .report-section-note{ font-size:11.5px; color:var(--muted-2); font-family:'JetBrains Mono',monospace; }
+  .report-section .kpis{ padding:0 0 20px; border-bottom:none; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); }
+  .report-section .chart-card{ margin-bottom:18px; }
+  .status-pill{ display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; font-family:'JetBrains Mono',monospace; }
+  .status-pill.met{ background:rgba(52,211,153,0.14); color:var(--green); }
+  .status-pill.below{ background:rgba(220,38,38,0.14); color:var(--red); }
+  .year-group-row{ background:var(--panel-2); cursor:pointer; user-select:none; }
+  .year-group-row:hover{ background:#EEF2F7; }
+  .year-group-row td{ font-weight:700; color:var(--hi); }
+  .year-toggle-icon{
+    display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; margin-right:8px;
+    border:1px solid var(--teal); border-radius:4px; color:var(--teal); font-family:'JetBrains Mono',monospace;
+    font-size:12px; font-weight:700; vertical-align:middle;
+  }
+  .year-month-count{ font-weight:400; color:var(--muted-2); font-size:11px; }
+  .month-detail-row td:first-child{ padding-left:44px; color:var(--muted); }
+  .month-detail-row{ background:rgba(15,23,42,0.035); }
+  @media (max-width:640px){ .report-header{ padding:20px 18px 14px; } .report-section{ padding:18px 18px; } }
+
+
+  /* ---------- Sales League ---------- */
+  .league-controls{ display:flex; flex-wrap:wrap; gap:12px 16px; padding:14px 32px; border-bottom:1px solid var(--line); }
+  .lc-sel{ display:flex; flex-direction:column; gap:5px; flex:0 1 220px; min-width:150px; }
+  .lc-sel > span{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--muted-2); text-transform:uppercase; }
+  .seg-dd{ position:relative; }
+  .seg-btn{ text-align:left; width:100%; color:var(--hi); }
+  .seg-menu{ position:absolute; top:100%; left:0; right:0; margin-top:6px; z-index:40; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:12px; padding:6px; box-shadow:0 12px 32px rgba(0,0,0,0.5); min-width:230px; }
+  .seg-menu[hidden]{ display:none; }
+  .seg-item{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:8px 12px; border-radius:8px; font-size:13px; color:var(--hi); cursor:pointer; }
+  .seg-item small{ font-size:10.5px; color:var(--muted-2); font-family:'JetBrains Mono',monospace; }
+  .seg-item:hover{ background:rgba(15,23,42,0.05); }
+  .seg-item.on{ background:rgba(14,116,144,0.12); color:var(--teal); font-weight:600; }
+  .seg-item.sub{ margin-left:16px; padding-left:16px; position:relative; color:var(--muted); font-size:12.5px; border-radius:0 8px 8px 0; }
+  .seg-item.sub::before{ content:''; position:absolute; left:0; top:-6px; bottom:50%; width:9px; border-left:1.5px solid #CBD3DF; border-bottom:1.5px solid #CBD3DF; border-bottom-left-radius:6px; }
+  .seg-item.sub.on{ color:var(--teal); }
+  .lc-sel select.period-select, .lc-sel .seg-btn{ padding:8px 30px 8px 12px; font-size:12.5px; }
+  .league-sub-note{ font-size:11.5px; color:var(--muted-2); font-family:'JetBrains Mono',monospace; }
+  .lg-wrap{ display:flex; flex-direction:column; gap:8px; }
+  .lg-head, .lg-row{
+    display:grid; align-items:center; column-gap:14px;
+    grid-template-columns:46px minmax(130px,1.1fr) minmax(130px,1fr) minmax(86px,0.7fr) 92px minmax(290px,2.3fr) 84px minmax(140px,1.1fr);
+    grid-template-areas:"rank name seg region tier info total note";
+  }
+  .lg-head{ padding:0 16px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:600; }
+  .lg-row{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px 16px; position:relative; overflow:hidden; }
+  .lg-row.best:nth-child(2){ background:linear-gradient(90deg, rgba(217,119,6,0.10), var(--panel) 40%); }
+  .lg-row.remind::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--red); }
+  .lg-row.best::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--green); }
+  .lg-head.as, .lg-row.as{
+    grid-template-columns:46px minmax(150px,1.2fr) minmax(140px,1fr) minmax(290px,2.3fr) 84px minmax(170px,1.4fr);
+    grid-template-areas:"rank name team info total note";
+  }
+  .lg-row.asm::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--teal); }
+  .lg-team{ grid-area:team; font-size:13px; color:var(--hi); }
+  .lg-team small{ display:block; font-size:11px; color:var(--muted-2); margin-top:2px; line-height:1.45; }
+  .lg-rank{ grid-area:rank; } .lg-name{ grid-area:name; } .lg-seg{ grid-area:seg; } .lg-tier{ grid-area:tier; }
+  .lg-info{ display:flex; flex-direction:column; gap:6px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--muted); }
+  .lg-info .ln{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; }
+  .lg-info b{ color:var(--hi); font-weight:600; }
+  .lg-info .k{ color:var(--muted-2); font-size:10px; text-transform:uppercase; letter-spacing:0.05em; }
+  .lg-info .apill{ font-size:11px; padding:1px 8px; }
+  .league-formula{ padding:14px 32px; font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; line-height:1.7; border-bottom:1px solid var(--line); }
+  .league-formula b{ color:var(--hi); font-weight:600; }
+  @media (max-width:640px){ .league-formula{ padding:12px 18px; } }
+  .lg-region{ grid-area:region; font-size:13px; color:var(--hi); } .lg-region small{ display:block; font-size:10.5px; color:var(--muted-2); margin-top:2px; } .lg-info{ grid-area:info; } .lg-total{ grid-area:total; } .lg-note{ grid-area:note; }
+  .lg-name b{ display:block; font-size:14px; color:var(--hi); }
+  .lg-name small, .lg-seg small{ display:block; font-size:11px; color:var(--muted-2); margin-top:2px; }
+  .lg-seg{ font-size:13px; color:var(--hi); }
+  .lg-num{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--hi); white-space:nowrap; }
+  .lg-note{ font-size:11.5px; color:var(--muted); line-height:1.45; }
+  .lg-note b{ color:var(--hi); font-weight:600; }
+  .lg-tag{ display:none; }
+  .medal{ display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; background:#E9EEF4; color:var(--muted); border:1px solid var(--line); }
+  .medal.m1{ background:#f5c542; color:#3b2a00; border-color:#f5c542; box-shadow:0 0 0 3px rgba(245,197,66,0.18); }
+  .medal.m2{ background:#cfd6df; color:#1c232c; border-color:#cfd6df; }
+  .medal.m3{ background:#d08a52; color:#2c1604; border-color:#d08a52; }
+  .medal.warn{ background:rgba(220,38,38,0.14); color:var(--red); border-color:rgba(220,38,38,0.4); }
+  .tier-badge{ display:inline-block; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:600; background:rgba(14,116,144,0.10); color:var(--teal); border:1px solid rgba(14,116,144,0.28); white-space:nowrap; }
+  .apill{ display:inline-flex; align-items:center; justify-content:center; padding:3px 10px; border-radius:20px; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; white-space:nowrap; }
+  .apill.ok{ background:rgba(52,211,153,0.14); color:var(--green); }
+  .apill.mid{ background:rgba(217,119,6,0.14); color:var(--amber); }
+  .apill.bad{ background:rgba(220,38,38,0.14); color:var(--red); }
+  .apill.na{ background:#E9EEF4; color:var(--muted-2); }
+  .apill.big{ font-size:13.5px; padding:5px 12px; }
+  .apill.rk{ box-shadow:0 0 0 1.5px currentColor; }
+  .lg-empty{ padding:22px; border:1px dashed var(--line); border-radius:14px; color:var(--muted); font-size:13px; text-align:center; }
+  @media (max-width:1000px){
+    .lg-head{ display:none; }
+    .lg-row{
+      grid-template-columns:44px 1fr 1fr; row-gap:9px; column-gap:10px;
+      grid-template-areas:"rank name total" ". seg seg" ". region tier" ". info info" ". note note";
+    }
+    .lg-row.as{ grid-template-areas:"rank name total" ". team team" ". info info" ". note note"; grid-template-columns:44px 1fr 1fr; }
+    .lg-total{ justify-self:end; }
+    .league-controls{ padding:14px 18px; }
+    .lc-sel{ flex:1 1 150px; max-width:none; }
+  }
+  @media (max-width:640px){ .league-controls{ padding:12px 18px; } .lc-sel{ flex:1 1 100%; } }
+
+  /* ---------- Ticker (signature element) ---------- */
+  /* ---------- Data row + status global ---------- */
+  .source-tabs-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    padding:12px 32px; background:#F6F8FB; border-bottom:1px solid var(--line);
+  }
+  .source-tabs{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .source-tabs .tabs-label{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.1em; color:var(--muted-2); text-transform:uppercase; margin-right:4px; }
+  .source-tab{
+    padding:7px 18px; border-radius:20px; background:var(--panel); border:1px solid var(--line);
+    color:var(--muted); font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; cursor:pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .source-tab:hover{ border-color:#CBD3DF; color:var(--hi); }
+  .source-tab.active{ background:var(--amber); color:#FFFFFF; border-color:var(--amber); }
+  .global-status{ display:flex; align-items:center; gap:8px; }
+  @media (max-width:640px){ .source-tabs-row{ padding:10px 18px; } }
+
+
+  /* ---------- Marketing hierarchy + End-of-Year panel ---------- */
+  .source-tabs .data-label{ font-size:12.5px; color:var(--hi); font-weight:600; }
+  .nav-cat{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--amber); padding:12px 10px 6px; }
+  #mainTable{ min-width:1180px; }
+  tr.cat-row td{ background:rgba(217,119,6,0.07); font-weight:700; color:var(--hi); }
+  tr.cat-row td:first-child{ color:var(--amber); }
+  td.indent{ padding-left:30px !important; }
+  .eoy-panel{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin-bottom:18px; }
+  .eoy-head{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .eoy-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; color:var(--hi); }
+  .eoy-sub{ font-size:12px; color:var(--muted); }
+  .eoy-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
+  .eoy-stat{ background:var(--panel-2); border:1px solid var(--line); border-radius:12px; padding:12px 14px; min-width:0; }
+  .eoy-stat .l{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; }
+  .eoy-stat .v{ font-family:'JetBrains Mono',monospace; font-size:clamp(13px,1.3vw,16px); font-weight:600; color:var(--hi); overflow-wrap:anywhere; }
+  .eoy-stat .d{ font-size:11px; margin-top:5px; font-family:'JetBrains Mono',monospace; color:var(--muted); }
+  .eoy-stat.hl{ border-color:rgba(52,211,153,0.45); }
+  .eoy-bar{ position:relative; height:10px; background:#E9EEF4; border-radius:6px; margin:16px 0 6px; overflow:hidden; }
+  .eoy-bar i{ position:absolute; left:0; top:0; bottom:0; border-radius:6px; }
+  .eoy-bar .proj{ background:rgba(14,116,144,0.35); }
+  .eoy-bar .ytd{ background:var(--teal); }
+  .eoy-bar-legend{ display:flex; gap:16px; flex-wrap:wrap; font-size:11px; color:var(--muted); }
+  .eoy-bar-legend i{ display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:6px; }
+  .eoy-formula{ font-size:11px; color:var(--muted-2); font-family:'JetBrains Mono',monospace; line-height:1.55; margin-top:12px; }
+
+  /* ---------- Metric tabs (tidak dipakai lagi) ---------- */
+  .metric-tabs{
+    display:flex; align-items:center; gap:8px; padding:10px 32px; background:#F6F8FB; border-bottom:1px solid var(--line);
+  }
+  .metric-tabs .tabs-label{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.1em; color:var(--muted-2); text-transform:uppercase; margin-right:4px; }
+  .metric-tab{
+    padding:8px 20px; border-radius:20px; background:var(--panel); border:1px solid var(--line);
+    color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:12.5px; cursor:pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .metric-tab:hover{ border-color:#CBD3DF; color:var(--hi); }
+  .metric-tab.active{ background:var(--teal); color:#FFFFFF; font-weight:700; border-color:var(--teal); }
+  .metric-empty-note{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--amber); margin-left:8px; }
+  @media (max-width:640px){ .metric-tabs{ padding:10px 18px; } }
+
+  .ticker-wrap{
+    background:#F6F8FB;
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+    white-space:nowrap;
+    position:relative;
+    height:34px;
+  }
+  .ticker-wrap::before, .ticker-wrap::after{
+    content:'';
+    position:absolute; top:0; bottom:0; width:40px; z-index:2;
+  }
+  .ticker-wrap::before{ left:0; background:linear-gradient(90deg,#F6F8FB, transparent);}
+  .ticker-wrap::after{ right:0; background:linear-gradient(270deg,#F6F8FB, transparent);}
+  .ticker-track{
+    display:inline-flex;
+    align-items:center;
+    height:34px;
+    animation:scroll 42s linear infinite;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.02em;
+  }
+  .ticker-track span{ padding:0 22px; color:var(--muted); border-right:1px solid var(--line); }
+  .ticker-track span b{ color:var(--hi); font-weight:600; }
+  .ticker-track .up{ color:var(--green); }
+  .ticker-track .down{ color:var(--red); }
+  @keyframes scroll{ 0%{transform:translateX(0);} 100%{transform:translateX(-50%);} }
+
+  /* ---------- Header ---------- */
+  header.dash-header{
+    padding:28px 32px 20px;
+    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand-eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em;
+    color:var(--teal); text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:8px;
+  }
+  .live-dot{ width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(52,211,153,0.6); animation:pulse 1.8s infinite; }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(52,211,153,0.55); }
+    70%{ box-shadow:0 0 0 8px rgba(52,211,153,0); }
+    100%{ box-shadow:0 0 0 0 rgba(52,211,153,0); }
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; margin:0; letter-spacing:-0.01em;
+  }
+  .sub{ color:var(--muted); font-size:13px; margin-top:4px; }
+  .data-asof{
+    font-style:italic; font-weight:700; font-size:12.5px; margin-top:6px;
+    color:var(--amber); text-shadow:0 0 14px rgba(217,119,6,0.35);
+    letter-spacing:0.01em;
+  }
+  .pace-chip{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:10px 16px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);
+    min-width:230px;
+  }
+  .pace-chip .pace-row{ display:flex; justify-content:space-between; margin-bottom:6px; }
+  .pace-bar{ height:6px; border-radius:4px; background:#EEF2F7; overflow:hidden; position:relative; }
+  .pace-bar i{ position:absolute; top:0; bottom:0; left:0; display:block; border-radius:4px; }
+  .pace-bar .elapsed{ background:var(--muted-2); }
+  .pace-bar .ach{ background:linear-gradient(90deg, var(--teal), var(--green)); }
+  .pace-legend{ display:flex; gap:14px; margin-top:6px; font-size:10.5px; }
+  .pace-legend span{ display:flex; align-items:center; gap:5px;}
+  .dot{width:7px;height:7px;border-radius:2px;display:inline-block;}
+
+  /* ---------- Data source badge ---------- */
+  .datasrc{
+    display:inline-flex; align-items:center; gap:7px; font-family:'JetBrains Mono',monospace; font-size:11px;
+    padding:6px 10px; border-radius:8px; border:1px solid var(--line); background:var(--panel); color:var(--muted); cursor:default;
+  }
+  .datasrc .dot{ width:7px; height:7px; border-radius:50%; }
+  .datasrc.live .dot{ background:var(--green); animation:pulse 1.8s infinite; }
+  .datasrc.sample .dot{ background:var(--amber); }
+  .datasrc.loading .dot{ background:var(--teal); animation:pulse 1s infinite; }
+  .datasrc.error .dot{ background:var(--red); }
+  .refresh-btn{
+    border:1px solid var(--line); background:var(--panel); color:var(--muted); border-radius:8px;
+    font-family:'JetBrains Mono',monospace; font-size:11px; padding:6px 10px; cursor:pointer; margin-left:8px;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .refresh-btn:hover{ color:var(--hi); border-color:#CBD3DF; }
+  .refresh-btn:disabled{ opacity:0.5; cursor:default; }
+
+  /* ---------- KPI grid ---------- */
+  .kpis{
+    display:grid; grid-template-columns:repeat(var(--n,7), minmax(0, 1fr)); gap:10px;
+    padding:18px 32px; border-bottom:1px solid var(--line);
+  }
+  .kpi-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px;
+    position:relative; overflow:hidden; transition:transform .15s ease, border-color .15s ease; min-width:0;
+  }
+  #kpiGrid .kpi-card, #leagueKpiGrid .kpi-card{ padding:13px 12px 12px 15px; border-radius:12px; }
+  #kpiGrid .kpi-label, #leagueKpiGrid .kpi-label{ font-size:10px; letter-spacing:0.05em; margin-bottom:8px; line-height:1.25; min-height:25px; }
+  #kpiGrid .kpi-value, #leagueKpiGrid .kpi-value{ font-size:clamp(12px, 1.1vw, 17px); overflow-wrap:normal; white-space:nowrap; }
+  .kpi-split{ margin-top:8px; display:flex; flex-direction:column; gap:3px; font-family:'JetBrains Mono',monospace; font-size:10.5px; }
+  .kpi-split > div{ display:flex; justify-content:space-between; gap:8px; padding-top:3px; border-top:1px dashed var(--line); }
+  .kpi-split span{ color:var(--muted); letter-spacing:0.04em; }
+  .kpi-split b{ color:var(--hi); font-weight:600; white-space:nowrap; }
+  #kpiGrid .kpi-delta, #leagueKpiGrid .kpi-delta{ font-size:10.5px; margin-top:6px; line-height:1.3; }
+  .kpi-card:hover{ transform:translateY(-2px); border-color:#CBD3DF; }
+  .kpi-card .accent-bar{ position:absolute; left:0; top:0; bottom:0; width:3px; }
+  .kpi-label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px; }
+  .kpi-value{ font-family:'JetBrains Mono',monospace; font-size:clamp(13px, 1.25vw, 18px); font-weight:600; color:var(--hi); overflow-wrap:anywhere; }
+  .kpi-value small{ font-size:12px; color:var(--muted); font-weight:400; margin-left:2px;}
+  .kpi-delta{ font-size:12px; margin-top:8px; font-family:'JetBrains Mono',monospace; }
+  .kpi-delta.up{ color:var(--green); } .kpi-delta.down{ color:var(--red); } .kpi-delta.flat{ color:var(--muted); }
+
+  /* ---------- Compact period-comparison selector (lives in nav pane) ---------- */
+  .period-select-wrap{ padding:0 10px 4px; }
+  .period-select{
+    width:100%; background:var(--panel-2); color:var(--hi); border:1px solid var(--line); border-radius:9px;
+    padding:9px 30px 9px 12px; font-family:'JetBrains Mono',monospace; font-size:13px; cursor:pointer;
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0Z' fill='%237C8697'/></svg>");
+    background-repeat:no-repeat; background-position:right 12px center;
+  }
+  .period-select:hover{ border-color:#CBD3DF; }
+  .period-select:focus{ outline:none; border-color:var(--teal); }
+  .period-select option{ background:var(--panel-2); color:var(--hi); }
+  .period-hint{ font-size:11px; color:var(--muted-2); padding:6px 10px 14px; line-height:1.5; }
+  .period-more-link{
+    background:none; border:none; padding:0; margin:0; cursor:pointer;
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--teal);
+    text-decoration:underline; text-underline-offset:2px;
+  }
+  .period-more-link:hover{ color:var(--hi); }
+  .nav-compare-item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:9px 12px; border-radius:9px; cursor:pointer; margin-bottom:3px; font-size:13px;
+    border:1px solid transparent; transition: background .12s ease, border-color .12s ease;
+  }
+  .nav-compare-item:hover{ background:rgba(15,23,42,0.035); }
+  .nav-compare-item.active{ background:rgba(14,116,144,0.09); border-color:rgba(14,116,144,0.35); font-weight:600; }
+  .nav-compare-value{ font-family:'JetBrains Mono',monospace; font-size:12px; }
+  .compare-empty-note{ font-size:11px; color:var(--muted-2); padding:2px 12px 10px; line-height:1.5; }
+
+  /* ---------- Layout ---------- */
+  .layout{ display:grid; grid-template-columns:290px 1fr; gap:0; min-height:calc(100vh - 260px); min-width:0; }
+  .layout > *{ min-width:0; }
+
+  /* Nav pane */
+  aside.nav{
+    border-right:1px solid var(--line);
+    padding:20px 14px 40px;
+    background:linear-gradient(180deg, rgba(15,23,42,0.035), transparent 200px);
+  }
+  .nav-title{ font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); padding:0 10px 12px; }
+  .nav-all{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 12px; border-radius:10px; cursor:pointer; margin-bottom:6px;
+    font-weight:600; font-size:13.5px; border:1px solid transparent;
+  }
+  .nav-all.active, .nav-channel.active > .nav-channel-head{ background:rgba(14,116,144,0.09); border-color:rgba(14,116,144,0.35); }
+  .nav-channel{ margin-bottom:4px; }
+  .nav-channel-head{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:10px 12px; border-radius:10px; cursor:pointer; border:1px solid transparent;
+  }
+  .nav-channel-head:hover{ background:rgba(15,23,42,0.035); }
+  .nav-channel-name{ display:flex; align-items:center; gap:9px; font-size:13.5px; font-weight:600; }
+  .chip{ width:6px; height:6px; border-radius:2px; flex-shrink:0; }
+  .nav-channel-gap{ font-family:'JetBrains Mono',monospace; font-size:11px; }
+  .caret{ font-size:10px; color:var(--muted-2); transition:transform .15s ease; }
+  .nav-channel.open .caret{ transform:rotate(90deg); }
+  .nav-units{ max-height:0; overflow:hidden; transition:max-height .2s ease; padding-left:8px; }
+  .nav-channel.open .nav-units{ max-height:500px; }
+  .nav-unit{
+    display:flex; justify-content:space-between; align-items:center; gap:6px;
+    padding:8px 12px 8px 20px; border-radius:8px; cursor:pointer; font-size:12.5px; color:var(--muted);
+    border-left:2px solid var(--line); margin:2px 0 2px 6px;
+  }
+  .nav-unit:hover{ color:var(--hi); background:rgba(15,23,42,0.035); }
+  .nav-unit.active{ color:var(--hi); border-left-color:var(--teal); background:rgba(14,116,144,0.07); }
+  .nav-unit-gap{ font-family:'JetBrains Mono',monospace; font-size:11px; }
+
+  /* Content */
+  section.content{ padding:24px 32px 40px; }
+  .content-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;}
+  .scope-title{ font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:600; }
+  .scope-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
+  .toggle-group{ display:flex; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:3px; }
+  .toggle-btn{
+    border:none; background:transparent; color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:11.5px;
+    padding:7px 14px; border-radius:8px; cursor:pointer;
+  }
+  .toggle-btn.active{ background:var(--teal); color:#FFFFFF; font-weight:700; }
+
+  .chart-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px;
+    margin-bottom:20px;
+  }
+  .chart-canvas-wrap{ position:relative; }
+  .chart-legend{ display:flex; gap:18px; margin-bottom:10px; font-size:12px; color:var(--muted); font-family:'Inter',sans-serif; }
+  .chart-legend span{ display:flex; align-items:center; gap:7px; }
+  .chart-legend i{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .bargroup rect{ transition: opacity .12s ease, y .25s ease, height .25s ease; cursor:pointer; }
+  .bargroup:hover rect{ opacity:0.82; }
+  .axis-label{ fill:var(--muted); font-family:'JetBrains Mono', monospace; }
+  .grid-line{ stroke:rgba(15,23,42,0.08); stroke-width:1; }
+  .chart-tooltip{
+    position:absolute; pointer-events:none; background:#FFFFFF; border:1px solid #E3E8EF; box-shadow:0 6px 18px rgba(15,23,42,.12); border-radius:10px;
+    padding:10px 12px; font-size:12px; color:var(--hi); font-family:'JetBrains Mono',monospace;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4); opacity:0; transform:translateY(4px); transition:opacity .12s ease, transform .12s ease;
+    white-space:nowrap; z-index:10;
+  }
+  .chart-tooltip.show{ opacity:1; transform:translateY(0); }
+  .chart-tooltip .tt-title{ color:var(--muted); font-family:'Inter',sans-serif; font-size:11px; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.04em; }
+  .chart-tooltip .tt-row{ display:flex; justify-content:space-between; gap:16px; }
+
+  .table-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow-x:auto; overflow-y:hidden;
+  }
+  .table-card-scroll{ max-height:460px; overflow-y:auto; }
+  .table-card-scroll thead th{ position:sticky; top:0; z-index:1; }
+  .table-footnote{ font-size:11px; color:var(--muted-2); font-family:'JetBrains Mono',monospace; padding:8px 4px 0; line-height:1.5; }
+  table{ width:100%; border-collapse:collapse; font-size:13px; min-width:640px; }
+  tbody td{ white-space:nowrap; }
+  thead th{
+    text-align:right; padding:12px 16px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--muted); border-bottom:1px solid var(--line); font-weight:600; background:var(--panel-2);
+  }
+  thead th:first-child, tbody td:first-child{ text-align:left; }
+  tbody td{ padding:11px 16px; text-align:right; border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace; font-size:12.5px; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background:rgba(15,23,42,0.035); }
+  tbody td:first-child{ font-family:'Inter',sans-serif; font-weight:600; font-size:13px; }
+  .gap-up{ color:var(--green); } .gap-down{ color:var(--red); }
+  tr.total-row td{ background:var(--panel-2); font-weight:700; color:var(--hi); }
+
+  @media (max-width:1240px){
+    #kpiGrid.kpis, #leagueKpiGrid.kpis{ grid-template-columns:repeat(4, minmax(0,1fr)); }
+    #kpiGrid .kpi-value, #leagueKpiGrid .kpi-value{ font-size:clamp(13px, 1.5vw, 16px); }
+  }
+  @media (max-width:1000px){
+    .layout{ grid-template-columns:1fr; }
+    aside.nav{ border-right:none; border-bottom:1px solid var(--line); }
+  }
+  @media (max-width:640px){
+    header.dash-header{ padding:20px 18px 16px; }
+    .kpis{ padding:14px 18px; }
+    #kpiGrid.kpis, #leagueKpiGrid.kpis{ grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+    #kpiGrid .kpi-value, #leagueKpiGrid .kpi-value{ font-size:clamp(12px, 3.3vw, 15px); }
+    section.content{ padding:18px 18px 30px; }
+    .pace-chip{ min-width:0; width:100%; }
+  }
+  @media (max-width:420px){
+    .kpi-card{ padding:14px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-tabs" id="pageTabs"></div>
+
+<div class="source-tabs-row" id="sourceTabsRow">
+  <div class="source-tabs"><span class="tabs-label">Data</span><span class="data-label">Marketing Revenue · tab Google Sheet "Marketing"</span></div>
+  <div class="global-status">
+    <span class="datasrc loading" id="dataSrcBadge"><span class="dot"></span><span id="dataSrcText">Memuat data...</span></span>
+    <button class="refresh-btn" id="refreshBtn" title="Ambil ulang data dari Google Sheet">↻ Refresh</button>
+  </div>
+</div>
+
+<div id="pageRevenueDashboard">
+<div class="ticker-wrap">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<header class="dash-header">
+  <div>
+    <div class="brand-eyebrow"><span class="live-dot"></span> MNC GROUP · REVENUE COMMAND</div>
+    <h1 id="dashTitle">Pantauan Pendapatan — Juli 2026</h1>
+    <div class="sub" id="headerSub">Target periode Jul-2026 &nbsp;·&nbsp; Aktual per 17-Jul-2026 &nbsp;·&nbsp; 2 Marketing Category / 3 Marketing Type / 13 Business</div>
+    <div class="data-asof" id="dataAsOfNote"></div>
+  </div>
+  <div class="pace-chip">
+    <div id="paceElapsedRow">
+      <div class="pace-row"><span>Progress bulan</span><span id="paceElapsed">54.8%</span></div>
+      <div class="pace-bar"><i class="elapsed" style="width:54.8%"></i></div>
+    </div>
+    <div class="pace-row" style="margin-top:10px;"><span>Achievement vs Target</span><span id="paceAch">73.92%</span></div>
+    <div class="pace-bar"><i class="ach" style="width:73.92%"></i></div>
+    <div class="pace-legend" id="paceLegend">
+      <span><i class="dot" style="background:var(--muted-2)"></i>Hari ke-17 dari 31</span>
+      <span><i class="dot" style="background:var(--green)"></i>Ahead of pace</span>
+    </div>
+  </div>
+</header>
+
+<section class="kpis" id="kpiGrid"></section>
+
+<div class="layout">
+  <aside class="nav" id="navPane">
+    <div class="nav-title">Periode</div>
+    <div class="period-select-wrap">
+      <select id="periodSelect" class="period-select"></select>
+    </div>
+    <div class="period-hint" id="periodHint"></div>
+
+    <div class="nav-title" style="margin-top:6px;">Perbandingan Periode</div>
+    <div id="navCompareList"></div>
+
+    <div class="nav-title" style="margin-top:20px;">Marketing Type &amp; Business</div>
+    <div class="nav-all active" id="navAll">
+      <span>Semua Marketing</span>
+      <span class="nav-channel-gap" id="navAllGap">+34.79%</span>
+    </div>
+    <div id="navChannels"></div>
+  </aside>
+
+  <section class="content">
+    <div class="content-head">
+      <div>
+        <div class="scope-title" id="scopeTitle">Semua Marketing</div>
+        <div class="scope-sub" id="scopeSub">Perbandingan Target vs Aktual per Marketing Type</div>
+      </div>
+      <div class="toggle-group" id="fullMtdToggle">
+        <button class="toggle-btn active" data-mode="full">Full Month</button>
+        <button class="toggle-btn" data-mode="mtd">MTD</button>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-legend" id="chartLegend"></div>
+      <div class="chart-canvas-wrap" id="chartWrap"></div>
+    </div>
+
+    <div class="table-card">
+      <table id="mainTable">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="table-footnote" id="tableFootnote"></div>
+  </section>
+</div>
+</div><!-- /#pageRevenueDashboard -->
+
+<div id="pageReportOverview" style="display:none;">
+  <div class="report-header">
+    <div>
+      <div class="brand-eyebrow"><span class="live-dot"></span> MNC GROUP · REVENUE COMMAND</div>
+      <h1>Report Overview <span style="color:var(--muted); font-weight:500;">— Bulanan &amp; Tahunan</span></h1>
+      <div class="sub" id="reportHeaderSub">Ringkasan eksekutif Revenue — semua periode yang tersedia di sheet</div>
+    </div>
+  </div>
+
+  <section class="report-section">
+    <div class="report-section-head">
+      <h2>1. Overview Revenue Tahunan</h2>
+      <span class="report-section-note" id="yearlyReportNote"></span>
+    </div>
+    <div class="kpis" id="yearlyKpiGrid"></div>
+    <div class="table-card table-card-scroll">
+      <table>
+        <thead id="yearlyTableHead"></thead>
+        <tbody id="yearlyTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="report-section">
+    <div class="report-section-head">
+      <h2>2. Proyeksi End of Year</h2>
+      <span class="report-section-note" id="eoyReportNote"></span>
+    </div>
+    <div class="eoy-panel" id="eoyPanelReport"></div>
+    <div class="table-card table-card-scroll">
+      <table>
+        <thead id="eoyTypeHead"></thead>
+        <tbody id="eoyTypeBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="report-section">
+    <div class="report-section-head">
+      <h2>3. Overview Revenue Bulanan</h2>
+      <span class="report-section-note" id="monthlyReportNote"></span>
+    </div>
+    <div class="kpis" id="monthlyKpiGrid"></div>
+    <div class="table-card table-card-scroll">
+      <table>
+        <thead id="monthlyTableHead"></thead>
+        <tbody id="monthlyTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+</div><!-- /#pageReportOverview -->
+
+<div id="pageSalesLeague" style="display:none;">
+  <div class="report-header">
+    <div>
+      <div class="brand-eyebrow"><span class="live-dot"></span> MNC GROUP · SALES LEAGUE</div>
+      <h1>Sales League <span style="color:var(--muted); font-weight:500;">— Corporate &amp; Wholesales</span></h1>
+      <div class="sub" id="leagueSub"></div>
+    </div>
+  </div>
+  <div class="league-controls">
+    <label class="lc-sel"><span>Periode</span><select id="leaguePeriodSelect" class="period-select"></select></label>
+    <div class="lc-sel seg-dd" id="leagueSegDD"><span>Segment</span><button type="button" class="period-select seg-btn" id="leagueSegBtn" aria-haspopup="listbox" aria-expanded="false"></button><div class="seg-menu" id="leagueSegMenu" role="listbox" hidden></div></div>
+    <label class="lc-sel"><span>Peringkat</span><select id="leagueRankSelect" class="period-select"></select></label>
+    <label class="lc-sel"><span>ASM</span><select id="leagueAsmSelect" class="period-select"></select></label>
+  </div>
+  <section class="kpis" id="leagueKpiGrid"></section>
+  <div class="league-formula" id="leagueFormula"></div>
+  <section class="report-section" id="leagueAsmSection">
+    <div class="report-section-head"><h2>Pencapaian per ASM / Regional</h2><span class="report-section-note" id="leagueAsmNote"></span></div>
+    <div class="lg-wrap" id="leagueAsm"></div>
+  </section>
+  <section class="report-section">
+    <div class="report-section-head"><h2 id="leagueBestTitle">Best Performance</h2><span class="report-section-note" id="leagueBestNote"></span></div>
+    <div class="lg-wrap" id="leagueBest"></div>
+  </section>
+  <section class="report-section">
+    <div class="report-section-head"><h2 id="leagueRemindTitle">Reminder · Perlu Perhatian</h2><span class="report-section-note" id="leagueRemindNote"></span></div>
+    <div class="lg-wrap" id="leagueRemind"></div>
+  </section>
+</div><!-- /#pageSalesLeague -->
+
+<script>
+/* =========================================================================
+   Konten sheet-config.js DIGABUNG langsung di sini (inline) supaya file HTML
+   ini 100% MANDIRI — tidak lagi bergantung pada file eksternal manapun untuk
+   bisa tampil. Ini sengaja dibuat begini karena banyak tempat (preview di
+   chat, dikirim by email, dibuka tanpa folder pendukung) hanya membaca satu
+   file HTML ini saja, dan sebelumnya dashboard jadi blank total kalau
+   sheet-config.js tidak ikut ada di folder yang sama.
+
+   Kalau kamu mau menghubungkan ke Google Sheet: cukup edit langsung nilai
+   SHEET_CONFIG di bawah ini (di dalam file HTML ini), TIDAK PERLU lagi edit
+   file sheet-config.js terpisah. File sheet-config.js masih disertakan
+   sebagai referensi/dokumentasi saja.
+   ========================================================================= */
+
+/* =========================================================================
+   SHEET-CONFIG.JS
+   Menghubungkan dashboard ke Google Sheet (tanpa API key, tanpa backend).
+   Cara kerja: memakai endpoint publik Google Visualization ("gviz") yang bisa
+   dibaca langsung oleh browser selama sheet di-share "Anyone with the link".
+
+   ------------------------------------------------------------------------
+   LANGKAH SETUP (sekali saja)
+   ------------------------------------------------------------------------
+   1. Di Google Sheet, buat SATU tab bernama PERSIS: "Marketing"
+      (import file template-gsheet-marketing.csv ke tab tsb).
+   2. Klik "Share" -> "Anyone with the link" -> role "Viewer".
+   3. Ambil SPREADSHEET_ID dari URL sheet:
+        https://docs.google.com/spreadsheets/d/  >>>SPREADSHEET_ID<<<  /edit
+   4. Isi SHEET_CONFIG.spreadsheetId di bawah ini dengan ID tersebut.
+   5. Header kolom baris pertama harus PERSIS seperti template (urutan bebas).
+   6. Kolom angka diformat NUMBER di Google Sheets, bukan Text.
+
+   ------------------------------------------------------------------------
+   TEMPLATE KOLOM (tab "Marketing")
+   ------------------------------------------------------------------------
+   Period | Marketing_category | Marketing_type | Business | Target | MTD Target |
+   Estimated Revenue (IDR) | Estimated Closing (IDR) | Target Tahunan
+
+   - Period: format "YYYY-MM", contoh "2026-10". Satu baris = satu Business
+     dalam satu periode. Isi riwayat bulan sebelumnya supaya MoM/QoQ/YoY dan
+     perhitungan End of Year (YTD) bisa jalan.
+   - Marketing_category > Marketing_type > Business = hierarki pivot
+     (mis. B2B > B2B2C > Mass Market). Nama Marketing_type harus unik.
+   - Target Tahunan (CARA 1, disarankan): buat tab TERPISAH bernama "TargetTahunan" dengan kolom
+     Tahun | Marketing_type | Business | Target Tahunan (1 baris per Business per tahun).
+     Kolom Marketing_type opsional (dipakai kalau nama Business ada di lebih dari satu Type).
+   - Target Tahunan (CARA 2, cadangan): kolom "Target Tahunan" di tab Marketing, target SETAHUN penuh untuk Business tsb (nilai yang sama
+     boleh diulang di semua bulan pada tahun yang sama). Kalau kosong/0,
+     proyeksi End of Year tetap dihitung tapi tanpa achievement vs target.
+   - Baris Total (per Type / Category / Grand Total) TIDAK perlu ada di sheet;
+     semua subtotal dihitung otomatis.
+
+   Kalau tab belum dibuat / belum diisi, dashboard TIDAK error: otomatis
+   menampilkan data contoh (demo).
+   ========================================================================= */
+
+const SHEET_CONFIG = {
+  spreadsheetId: "1ySfQyzsoLJT-X0ZRs9WOEIbqAc7FGdtv52d3eRNRIrY",
+
+  // Nama TAB per Source — HARUS PERSIS sama dengan nama tab di Google Sheets.
+  sourceSheets: {
+    marketing: "Marketing",
+  },
+
+  autoRefreshMinutes: 5,
+
+  // Paksa periode berjalan tertentu (berlaku untuk semua source & metric), format "YYYY-MM".
+  // Kosongkan ("") untuk otomatis memakai periode terbaru per source+metric.
+  currentPeriod: "",
+
+  columns: {
+    period: "Period",
+    category: "Marketing_category",
+    groupChannel: "Marketing_type",
+    groupUnitBusiness: "Business",
+    target: "Target",
+    mtdTarget: "MTD Target",
+    estimatedRevenue: "Estimated Revenue (IDR)",
+    estimatedClosing: "Estimated Closing (IDR)",
+    yearlyTarget: "Target Tahunan",   // opsional: dipakai kalau tab TargetTahunan tidak ada
+  },
+
+  // Tab TERPISAH untuk Target Tahunan per Business (disarankan).
+  // Kolom: Tahun | Marketing_type (opsional) | Business | Target Tahunan
+  // Kalau tab ini tidak ada/gagal dibaca, dashboard memakai kolom "Target Tahunan" di tab Marketing.
+  // Tab Sales League (Corporate & Wholesales). 1 baris = 1 sales x 1 bulan.
+  // Kalau tab tidak ada / belum diisi, halaman Sales League memakai data contoh (demo).
+  salesLeague: {
+    sheet: "SalesLeague",
+    // spreadsheetId: "",     // opsional: isi kalau Sales League memakai file Google Sheet TERPISAH
+    topN: 5,            // jumlah sales di "Best Performance"
+    remindN: 5,         // maksimum sales di "Reminder"
+    remindBelow: 80,    // KPI Score (%) di bawah ini = perlu reminder
+    // KPI Score = jumlah (bobot x skor komponen) / jumlah bobot komponen yang datanya ada
+    weights: { achievement: 70, churn: 10, activity: 20 },
+    achCap: 120,        // Achievement dihitung maksimal segini (%) dalam KPI Score
+    actCap: 100,        // Activity (FU pelanggan baru) dihitung maksimal segini (%) dalam KPI Score
+    columns: {
+      period: "Period",
+      name: "Nama Sales",
+      join: "Join Date",
+      unit: "Business Unit",
+      segment: "Segment",
+      arpu: "ARPU Tier",
+      region: "Regional/Kota",
+      asm: "ASM",                              // nama ASM (atasan langsung sales), opsional
+      targetNew: "Target New Acquisition",
+      targetMonthly: "Target Bulanan",        // New + Recurring. Target Recurring = Target Bulanan - Target New
+      targetRecurring: "Target Recurring",    // alternatif kalau tidak ada kolom Target Bulanan
+      actualNew: "Actual New Acquisition",
+      actualRecurring: "Actual Recurring",
+      targetFu: "Target FU Pelanggan Baru",   // opsional: target jumlah follow-up calon pelanggan baru per bulan
+      actualFu: "Actual FU Pelanggan Baru",   // opsional: realisasi follow-up
+      churn: "Churn (IDR)",                   // opsional
+      base: "Recurring Base (IDR)",           // opsional
+      targetChurn: "Target Churn %",          // opsional, mis. 2 atau 2%
+    },
+  },
+
+  yearlyTargetSheet: "TargetTahunan",
+  yearlyColumns: {
+    year: "Tahun",
+    type: "Marketing_type",
+    business: "Business",
+    target: "Target Tahunan",
+  },
+
+  channelColorPalette: ["#DC2626", "#D97706", "#0891B2", "#059669", "#7C3AED", "#DB2777"],
+};
+
+/* =========================================================================
+   Tidak perlu diubah di bawah ini kecuali struktur sheet berubah drastis.
+   ========================================================================= */
+
+const REQUIRED_COLUMN_KEYS = [
+  "groupChannel", "groupUnitBusiness", "target", "mtdTarget",
+  "estimatedRevenue", "estimatedClosing",
+];
+
+function _normalizeMetric(raw){
+  const s = String(raw || "").toLowerCase().trim();
+  if(s.startsWith("view")) return "views";
+  if(s.startsWith("video")) return "video";
+  return "revenue"; // default / fallback untuk sheet lama tanpa kolom Metric
+}
+
+function _normalizeHeader(str) {
+  return String(str || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function _toNumber(v) {
+  if (v === null || v === undefined || v === "") return 0;
+  if (typeof v === "number") return v;
+  const cleaned = String(v).replace(/[^0-9.\-]/g, "");
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+
+function _buildSheetUrl(config, sheetName) {
+  const base = `https://docs.google.com/spreadsheets/d/${config.spreadsheetId}/gviz/tq?tqx=out:json`;
+  return `${base}&sheet=${encodeURIComponent(sheetName)}`;
+}
+
+/* ---------- Helper aritmatika periode "YYYY-MM" (dipakai juga oleh dashboard) ---------- */
+function parsePeriod(p) {
+  const [y, m] = String(p).split("-").map(Number);
+  return { y, m };
+}
+function periodKey(y, m) {
+  return `${y}-${String(m).padStart(2, "0")}`;
+}
+function shiftMonth(period, delta) {
+  let { y, m } = parsePeriod(period);
+  m += delta;
+  while (m < 1) { m += 12; y--; }
+  while (m > 12) { m -= 12; y++; }
+  return periodKey(y, m);
+}
+function quarterMonthsToDate(period) {
+  const { y, m } = parsePeriod(period);
+  const qStartMonth = Math.floor((m - 1) / 3) * 3 + 1;
+  const months = [];
+  for (let mm = qStartMonth; mm <= m; mm++) months.push(periodKey(y, mm));
+  return months;
+}
+function priorQuarterMonthsToDate(period) {
+  return quarterMonthsToDate(period).map((p) => shiftMonth(p, -3));
+}
+const ID_MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+function formatPeriodLabel(period) {
+  const { y, m } = parsePeriod(period);
+  if(!y || !m || m < 1 || m > 12 || isNaN(y) || isNaN(m)) return String(period); // fallback aman, bukan "undefined NaN"
+  return `${ID_MONTHS[m - 1]} ${y}`;
+}
+
+/**
+ * Ambil data mentah dari SATU tab/sheet -> array of row objects
+ * { period, metric, groupChannel, groupUnitBusiness, target, mtdTarget, estimatedRevenue, estimatedClosing }
+ */
+/** Normalisasi nilai kolom Period jadi "YYYY-MM" yang valid, atau null kalau
+ *  tidak bisa diartikan (kosong, format salah, dsb). Juga menangani kasus sel
+ *  diformat sebagai Date di Google Sheets (gviz mengembalikannya sebagai
+ *  string "Date(YYYY,MM,DD)" dengan bulan 0-based). */
+function _normalizePeriodString(raw){
+  if(raw === null || raw === undefined || raw === "") return null;
+  const dateMatch = String(raw).match(/^Date\((\d+),(\d+),(\d+)/);
+  if(dateMatch){
+    const y = parseInt(dateMatch[1],10);
+    const m = parseInt(dateMatch[2],10) + 1; // bulan di gviz 0-based
+    return periodKey(y, m);
+  }
+  const s = String(raw).trim();
+  const m2 = s.match(/^(\d{4})[\/\-](\d{1,2})$/);
+  if(m2){
+    const mm = parseInt(m2[2],10);
+    if(mm >= 1 && mm <= 12) return periodKey(parseInt(m2[1],10), mm);
+  }
+  return null;
+}
+
+async function fetchSheetRows(config, sheetName) {
+  if (!config.spreadsheetId || config.spreadsheetId.includes("PASTE_SPREADSHEET_ID")) {
+    throw new Error("SHEET_CONFIG.spreadsheetId belum diisi. Lihat komentar di sheet-config.js.");
+  }
+
+  const url = _buildSheetUrl(config, sheetName);
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Gagal mengambil tab "${sheetName}" (HTTP ${res.status}). Pastikan sheet di-share "Anyone with the link" dan nama tab benar.`);
+  }
+
+  const text = await res.text();
+  const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+  if (!match) {
+    throw new Error(`Format respons tab "${sheetName}" tidak dikenali. Cek apakah nama tab tsb benar dan sheet-nya publik.`);
+  }
+
+  let json;
+  try {
+    json = JSON.parse(match[1]);
+  } catch (e) {
+    throw new Error(`Gagal parse JSON dari tab "${sheetName}": ` + e.message);
+  }
+
+  if (json.status === "error") {
+    const msg = (json.errors && json.errors[0] && json.errors[0].detailed_message) || `Tab "${sheetName}" tidak ditemukan.`;
+    throw new Error("Google Sheet error: " + msg);
+  }
+
+  const cols = json.table.cols.map((c) => _normalizeHeader(c.label));
+  const colIndex = {};
+  Object.entries(config.columns).forEach(([key, headerLabel]) => {
+    colIndex[key] = cols.indexOf(_normalizeHeader(headerLabel));
+  });
+
+  const missing = REQUIRED_COLUMN_KEYS.filter((key) => colIndex[key] === -1).map((key) => config.columns[key]);
+  if (missing.length) {
+    throw new Error(`Kolom berikut tidak ditemukan di tab "${sheetName}": ` + missing.join(", "));
+  }
+
+  const hasPeriodColumn = colIndex.period !== undefined && colIndex.period !== -1;
+  const hasMetricColumn = colIndex.metric !== undefined && colIndex.metric !== -1;
+
+  let skippedInvalidPeriod = 0;
+  let skippedEmpty = 0;
+
+  const rows = json.table.rows
+    .map((row) => {
+      const cell = (key) => (row.c[colIndex[key]] ? row.c[colIndex[key]].v : null);
+      const groupChannel = String(cell("groupChannel") || "").trim();
+      const groupUnitBusiness = String(cell("groupUnitBusiness") || "").trim();
+      const isEmptyRow = groupChannel === "" && groupUnitBusiness === "";
+
+      let period = null;
+      if(hasPeriodColumn){
+        period = _normalizePeriodString(cell("period"));
+      } else {
+        period = config.currentPeriod || "current";
+      }
+
+      const rawMetric = hasMetricColumn ? String(cell("metric") || "").trim() : "";
+      return {
+        period,
+        metric: _normalizeMetric(rawMetric),
+        category: String(cell("category") || "").trim(),
+        yearlyTarget: _toNumber(cell("yearlyTarget")),
+        groupChannel, groupUnitBusiness,
+        target: _toNumber(cell("target")),
+        mtdTarget: _toNumber(cell("mtdTarget")),
+        estimatedRevenue: _toNumber(cell("estimatedRevenue")),
+        estimatedClosing: _toNumber(cell("estimatedClosing")),
+        _isEmptyRow: isEmptyRow,
+      };
+    })
+    .filter((r) => {
+      if(r._isEmptyRow){ skippedEmpty++; return false; }
+      if(hasPeriodColumn && r.period === null){ skippedInvalidPeriod++; return false; }
+      return true;
+    })
+    .map((r) => { delete r._isEmptyRow; return r; });
+
+  if(skippedInvalidPeriod > 0){
+    console.warn(`[sheet-config] Tab "${sheetName}": ${skippedInvalidPeriod} baris diabaikan karena kolom Period kosong/format tidak valid (harus "YYYY-MM", contoh "2026-07").`);
+  }
+
+  if (!rows.length) {
+    throw new Error(`Tab "${sheetName}" berhasil dibuka tapi tidak ada baris data yang valid` + (skippedInvalidPeriod ? ` (${skippedInvalidPeriod} baris diabaikan karena Period tidak valid — cek format "YYYY-MM").` : '.'));
+  }
+
+  return rows;
+}
+
+function _mkUnit(name, target, mtdTarget, actual, closing, yearlyTarget) {
+  const { mtdPct, achPct, gapPct } = _computePercents(target, mtdTarget, actual);
+  return { name, target, mtdTarget, actual, closing, yearlyTarget: yearlyTarget || 0, mtdPct, achPct, gapPct };
+}
+function _aggregate(items) {
+  const sum = (k) => items.reduce((s, x) => s + (x[k] || 0), 0);
+  const target = sum("target"), mtdTarget = sum("mtdTarget"), actual = sum("actual"), closing = sum("closing"), yearlyTarget = sum("yearlyTarget");
+  return { target, mtdTarget, actual, closing, yearlyTarget, ..._computePercents(target, mtdTarget, actual) };
+}
+function _mkChannel(name, category, color, units) { return { name, category, color, total: _aggregate(units), units }; }
+function _mkGrand(channels) { return _aggregate(channels.map((c) => c.total)); }
+
+function _computePercents(target, mtdTarget, actual) {
+  const mtdPct = mtdTarget !== 0 ? (actual / mtdTarget) * 100 : 0;
+  const achPct = target !== 0 ? (actual / target) * 100 : 0;
+  const gapPct = mtdTarget !== 0 ? mtdPct - 100 : 0;
+  return { mtdPct, achPct, gapPct };
+}
+
+/**
+ * Ubah rows (SATU periode saja) -> { DATA, GRAND }.
+ * DATA = daftar Marketing_type (channel) { name, category, color, total, units[Business] },
+ * diurutkan supaya Marketing_category yang sama berdekatan.
+ */
+function buildDashboardData(rows, config, metric) {
+  const order = [];
+  const map = new Map();
+  const catOrder = [];
+  rows.forEach((r) => {
+    if (!catOrder.includes(r.category)) catOrder.push(r.category);
+    const key = r.category + "||" + r.groupChannel;
+    if (!map.has(key)) { map.set(key, { name: r.groupChannel, category: r.category, units: [] }); order.push(key); }
+    map.get(key).units.push(_mkUnit(r.groupUnitBusiness, r.target, r.mtdTarget, r.estimatedRevenue, r.estimatedClosing, r.yearlyTarget));
+  });
+  order.sort((a, b) => catOrder.indexOf(map.get(a).category) - catOrder.indexOf(map.get(b).category));
+  const DATA = order.map((key, i) => {
+    const c = map.get(key);
+    return _mkChannel(c.name, c.category, config.channelColorPalette[i % config.channelColorPalette.length], c.units);
+  });
+  return { DATA, GRAND: _mkGrand(DATA) };
+}
+
+/**
+ * Kelompokkan rows SATU SOURCE (bisa multi-metric + multi-periode) ->
+ * { revenue:{periodsIndex,currentPeriod,allPeriods}, views:{...}, video:{...} }
+ * Metric yang tidak ada datanya di tab ini TIDAK dimasukkan.
+ */
+function buildMetricsIndex(rows, config) {
+  const byMetric = new Map();
+  rows.forEach((r) => {
+    if (!byMetric.has(r.metric)) byMetric.set(r.metric, []);
+    byMetric.get(r.metric).push(r);
+  });
+
+  const metricsIndex = {};
+  byMetric.forEach((metricRows, metric) => {
+    const byPeriod = new Map();
+    metricRows.forEach((r) => {
+      if (!byPeriod.has(r.period)) byPeriod.set(r.period, []);
+      byPeriod.get(r.period).push(r);
+    });
+    const periodsIndex = {};
+    byPeriod.forEach((periodRows, period) => {
+      periodsIndex[period] = buildDashboardData(periodRows, config, metric);
+    });
+    const allPeriods = Array.from(byPeriod.keys()).sort();
+    const currentPeriod = (config.currentPeriod && periodsIndex[config.currentPeriod])
+      ? config.currentPeriod
+      : allPeriods[allPeriods.length - 1];
+    metricsIndex[metric] = { periodsIndex, currentPeriod, allPeriods };
+  });
+
+  return metricsIndex;
+}
+
+/**
+ * Fetch + transform SEMUA source (Marketing) sekaligus, masing-masing
+ * dari tab-nya sendiri. Setiap source diambil independen — kalau satu tab
+ * gagal/tidak ada, source lain tetap lanjut berhasil.
+ * Return: { youtube: {ok:true, metricsIndex} | {ok:false, error}, meta:{...}, tiktok:{...} }
+ */
+/** Baca tab TargetTahunan -> { byTypeBusiness: Map("tahun||type||business"), byBusiness: Map("tahun||business") }.
+ *  Return null kalau tab tidak ada / kosong / kolom wajib tidak lengkap (dashboard lalu
+ *  memakai kolom "Target Tahunan" di tab Marketing). */
+function _isoDateFromSheet(v){
+  if(v === null || v === undefined || v === "") return "";
+  let d = null;
+  const m = String(v).match(/^Date\((\d+),(\d+),(\d+)/);
+  if(m) d = new Date(+m[1], +m[2], +m[3]);
+  else { const t = new Date(String(v).trim()); if(!isNaN(t)) d = t; }
+  if(!d) return "";
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+
+/** Baca tab SalesLeague -> array baris
+ *  { period,name,join,unit,segment,arpu,tNew,tRec,aNew,aRec,churn,base,tcPct }.
+ *  Hanya Business Unit Corporate & Wholesales yang dipakai. Return null kalau tab tidak ada/kosong/kolom kurang. */
+async function fetchLeagueRows(config) {
+  const lc = config.salesLeague;
+  if (!lc || !lc.sheet) return null;
+  const sid = lc.spreadsheetId || config.spreadsheetId;
+  if (!sid || sid.includes("PASTE_SPREADSHEET_ID")) return null;
+  try {
+    const res = await fetch(_buildSheetUrl({ ...config, spreadsheetId: sid }, lc.sheet));
+    if (!res.ok) return null;
+    const text = await res.text();
+    const m = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+    if (!m) return null;
+    const json = JSON.parse(m[1]);
+    if (json.status === "error" || !json.table) return null;
+    const labels = json.table.cols.map((c) => _normalizeHeader(c.label));
+    const ix = {};
+    Object.entries(lc.columns).forEach(([k, h]) => { ix[k] = labels.indexOf(_normalizeHeader(h)); });
+    const need = ["period","name","unit","targetNew","actualNew","actualRecurring"];
+    const miss = need.filter((k) => ix[k] < 0).map((k) => lc.columns[k]);
+    if (ix.targetMonthly < 0 && ix.targetRecurring < 0) miss.push(`${lc.columns.targetMonthly} (atau ${lc.columns.targetRecurring})`);
+    if (miss.length) { console.warn(`[sheet-config] Tab "${lc.sheet}" ada tapi kolom ini tidak ditemukan: ${miss.join(", ")} — Sales League memakai data contoh.`); return null; }
+    const hasChurn = ix.churn >= 0 && ix.base >= 0;
+    const hasFu = ix.targetFu >= 0 && ix.actualFu >= 0;
+    const out = [];
+    json.table.rows.forEach((row) => {
+      const cell = (k) => (ix[k] >= 0 && row.c[ix[k]] ? row.c[ix[k]] : null);
+      const v = (k) => { const c = cell(k); return c ? c.v : null; };
+      const period = _normalizePeriodString(v("period"));
+      const name = String(v("name") || "").trim();
+      const unitRaw = String(v("unit") || "").toLowerCase();
+      const unit = unitRaw.includes("corporate") ? "Corporate" : (unitRaw.includes("wholesale") ? "Wholesales" : "");
+      if (!period || !name || !unit) return;
+      const segRaw = String(v("segment") || "").toLowerCase();
+      const segment = unit === "Wholesales" ? "Wholesales" : (segRaw.includes("sam") ? "Corporate (SAM)" : "Corporate (Organic)");
+      const tNew = _toNumber(v("targetNew"));
+      const tRec = ix.targetMonthly >= 0 ? Math.max(0, _toNumber(v("targetMonthly")) - tNew) : _toNumber(v("targetRecurring"));
+      // Target Churn %: "2%" (sel berformat persen -> 0.02) atau angka 2 -> keduanya = 2 (persen)
+      let tcPct = null;
+      const tc = cell("targetChurn");
+      if (tc && tc.v !== null && tc.v !== "") {
+        const raw = _toNumber(tc.v);
+        tcPct = (typeof tc.f === "string" && tc.f.includes("%")) ? raw * 100 : raw;
+      }
+      out.push({
+        period, name, unit, segment,
+        join: _isoDateFromSheet(v("join")),
+        arpu: String(v("arpu") || "").trim(),
+        region: String(v("region") || "").trim(),
+        asm: String(v("asm") || "").trim(),
+        tNew, tRec, aNew: _toNumber(v("actualNew")), aRec: _toNumber(v("actualRecurring")),
+        tFu: hasFu ? _toNumber(v("targetFu")) : null, aFu: hasFu ? _toNumber(v("actualFu")) : null,
+        churn: hasChurn ? _toNumber(v("churn")) : null,
+        base: hasChurn ? _toNumber(v("base")) : null,
+        tcPct,
+      });
+    });
+    return out.length ? out : null;
+  } catch (e) {
+    console.warn("[sheet-config] Tab SalesLeague gagal dibaca:", e.message);
+    return null;
+  }
+}
+
+async function fetchYearlyTargets(config) {
+  if (!config.yearlyTargetSheet) return null;
+  try {
+    const res = await fetch(_buildSheetUrl(config, config.yearlyTargetSheet));
+    if (!res.ok) return null;
+    const text = await res.text();
+    const m = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+    if (!m) return null;
+    const json = JSON.parse(m[1]);
+    if (json.status === "error" || !json.table) return null;
+    const labels = json.table.cols.map((c) => _normalizeHeader(c.label));
+    const ix = (name) => labels.indexOf(_normalizeHeader(name));
+    const yc = config.yearlyColumns;
+    const iY = ix(yc.year), iB = ix(yc.business), iT = ix(yc.target), iType = ix(yc.type);
+    if (iY < 0 || iB < 0 || iT < 0) {
+      console.warn(`[sheet-config] Tab "${config.yearlyTargetSheet}" ada tapi kolom wajib (${yc.year}, ${yc.business}, ${yc.target}) tidak lengkap — pakai kolom Target Tahunan di tab Marketing.`);
+      return null;
+    }
+    const byTypeBusiness = new Map(), byBusiness = new Map();
+    let n = 0;
+    json.table.rows.forEach((row) => {
+      const v = (i) => (i >= 0 && row.c[i] ? row.c[i].v : null);
+      const year = parseInt(String(v(iY)).replace(/[^0-9]/g, ""), 10);
+      const business = String(v(iB) || "").trim();
+      const target = _toNumber(v(iT));
+      if (!year || !business) return;
+      const type = iType >= 0 ? String(v(iType) || "").trim() : "";
+      if (type) byTypeBusiness.set(`${year}||${type}||${business}`, target);
+      byBusiness.set(`${year}||${business}`, target);
+      n++;
+    });
+    return n > 0 ? { byTypeBusiness, byBusiness, count: n } : null;
+  } catch (e) {
+    console.warn("[sheet-config] Tab TargetTahunan gagal dibaca:", e.message);
+    return null;
+  }
+}
+
+/** Timpa row.yearlyTarget dengan nilai dari tab TargetTahunan (cocok per tahun + type + business). */
+function applyYearlyTargets(rows, yt) {
+  if (!yt) return 0;
+  let matched = 0;
+  rows.forEach((r) => {
+    const y = parsePeriod(r.period).y;
+    if (!y) return;
+    let v = yt.byTypeBusiness.get(`${y}||${r.groupChannel}||${r.groupUnitBusiness}`);
+    if (v === undefined) v = yt.byBusiness.get(`${y}||${r.groupUnitBusiness}`);
+    if (v !== undefined) { r.yearlyTarget = v; matched++; }
+  });
+  return matched;
+}
+
+async function loadAllSourcesFromSheet(config = SHEET_CONFIG) {
+  const entries = Object.entries(config.sourceSheets);
+  const results = {};
+  const yearlyTargets = await fetchYearlyTargets(config);
+  await Promise.all(entries.map(async ([source, sheetName]) => {
+    try {
+      const rows = await fetchSheetRows(config, sheetName);
+      applyYearlyTargets(rows, yearlyTargets);
+      results[source] = { ok: true, metricsIndex: buildMetricsIndex(rows, config) };
+    } catch (e) {
+      results[source] = { ok: false, error: e.message };
+    }
+  }));
+  return results;
+}
+
+</script>
+<script>
+/* ============ SAMPLE DATA (fallback jika Google Sheet belum di-setup / gagal diakses) ============ */
+const SAMPLE_CURRENT_PERIOD = "2026-10";
+const SAMPLE_YEARLY_FACTOR = 12; // demo: Target Tahunan = target bulanan x 12 (isi angka sebenarnya di kolom "Target Tahunan")
+
+// [Marketing_category, Marketing_type, Business, Target (= MTD Target), Estimated Revenue (= Est. Closing)]
+const _SAMPLE_ROWS = [
+  ["B2B","B2B","AdSales",345000000.00,0.00],
+  ["B2B","B2B","Corporate",6005793546.00,4890340178.37],
+  ["B2B","B2B","Event",810000000.00,140500000.00],
+  ["B2B","B2B2C","Mass Market",2336801802.00,1081600451.00],
+  ["B2B","B2B2C","Partnetship",341904066.67,178894930.44],
+  ["B2B","B2B2C","Wholesales",2064642563.87,1383591308.30],
+  ["B2C","Retail","CubMu (Retail)",81718177.14,28469432.43],
+  ["B2C","Retail","Internet",0.00,0.00],
+  ["B2C","Retail","Market Place",188454183.78,70263738.74],
+  ["B2C","Retail","Others",0.00,28469432.43],
+  ["B2C","Retail","Portfolio",2858327502.80,2681461533.00],
+  ["B2C","Retail","SAM",41434756.75,43019196.39],
+  ["B2C","Retail","Teledigital",159846432.43,81790540.55],
+];
+const _TYPE_COLORS = ["#0891B2","#D97706","#059669","#7C3AED","#DB2777","#DC2626"];
+function _buildSampleData(){
+  const order = [], map = new Map();
+  _SAMPLE_ROWS.forEach(r => {
+    if(!map.has(r[1])){ map.set(r[1], {category:r[0], units:[]}); order.push(r[1]); }
+    map.get(r[1]).units.push(_mkUnit(r[2], r[3], r[3], r[4], r[4], r[3]*SAMPLE_YEARLY_FACTOR));
+  });
+  return order.map((name,i) => _mkChannel(name, map.get(name).category, _TYPE_COLORS[i % _TYPE_COLORS.length], map.get(name).units));
+}
+const SAMPLE_DATA = _buildSampleData();
+const SAMPLE_GRAND = _mkGrand(SAMPLE_DATA);
+
+/** Hash string -> [0,1), dipakai supaya data historis contoh konsisten
+ *  setiap reload (bukan acak tiap kali). */
+function _seededRand(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (Math.imul(31,h) + str.charCodeAt(i)) | 0; }
+  return ((h >>> 0) % 10000) / 10000;
+}
+
+/* Satu-satunya metric & source di dashboard ini. */
+const METRICS = { revenue: { key:'revenue', label:'Revenue', unitLabel:'Rp', hasMtd:true } };
+const METRIC_ORDER = ['revenue'];
+const SOURCES = { marketing: { key:'marketing', label:'Marketing' } };
+const SOURCE_ORDER = ['marketing'];
+const SAMPLE_BY_SOURCE = { marketing: { revenue: { DATA: SAMPLE_DATA, GRAND: SAMPLE_GRAND } } };
+
+/* ============ STATE ============ */
+let state = { channel:null, unit:null, mode:'full', compareMode:'all', metric:'revenue', source:'marketing' };
+// mode: 'full' -> Target vs Est.Closing, 'mtd' -> MTD Target vs Est.Revenue
+// compareMode: 'all' | 'mom' | 'qoq' | 'yoy'
+// channel = Marketing_type, unit = Business
+
+const COMPARE_LABELS = { all:"Semua", mom:"MoM", qoq:"QoQ", yoy:"YoY" };
+
+let sourcesData = {};
+let metricsData = {};
+let DATA = SAMPLE_DATA;
+let GRAND = SAMPLE_GRAND;
+let periodsIndex = {};
+let currentPeriod = SAMPLE_CURRENT_PERIOD;
+let latestActualPeriod = SAMPLE_CURRENT_PERIOD;
+let comparisonsAreSynthetic = true;
+let isEmptyMetric = false;
+
+/** Bangun 13 bulan riwayat sintetis (demo) dari data dasar. Target Tahunan
+ *  tetap konstan sepanjang tahun (tahun sebelumnya 88% dari tahun berjalan). */
+function buildSyntheticPeriodsIndexFor(baseData, baseGrand){
+  const index = { [SAMPLE_CURRENT_PERIOD]: { DATA: baseData, GRAND: baseGrand } };
+  const curYear = parsePeriod(SAMPLE_CURRENT_PERIOD).y;
+  for(let back=1; back<=13; back++){
+    const label = shiftMonth(SAMPLE_CURRENT_PERIOD, -back);
+    const yearFactor = parsePeriod(label).y < curYear ? 0.88 : 1;
+    const channels = baseData.map(ch => {
+      const units = ch.units.map(u => {
+        const noise = (_seededRand(u.name + '|' + back) - 0.5) * 0.18; // ±9%
+        const trend = back * 0.012;
+        const f = Math.max(0.35, 1 - trend + noise);
+        return _mkUnit(u.name, u.target*f, u.mtdTarget*f, u.actual*f, u.closing*f, u.yearlyTarget*yearFactor);
+      });
+      return _mkChannel(ch.name, ch.category, ch.color, units);
+    });
+    index[label] = { DATA: channels, GRAND: _mkGrand(channels) };
+  }
+  return index;
+}
+
+function buildSyntheticMetricsData(source){
+  const md = {};
+  METRIC_ORDER.forEach(key => {
+    const sample = SAMPLE_BY_SOURCE[source][key];
+    md[key] = {
+      periodsIndex: buildSyntheticPeriodsIndexFor(sample.DATA, sample.GRAND),
+      currentPeriod: SAMPLE_CURRENT_PERIOD,
+      latestActualPeriod: SAMPLE_CURRENT_PERIOD,
+      comparisonsAreSynthetic: true,
+    };
+  });
+  return md;
+}
+
+/* ============ HELPERS ============ */
+const _trunc = (v, d) => { const f = Math.pow(10, d); return (Math.floor(v * f + 1e-6) / f).toFixed(d); };   // dipotong, TANPA pembulatan
+const fmtIDR = (n, compact=true) => {
+  // >= 1 miliar -> "15.233 Bio" (3 desimal); >= 1 juta -> "15.23 Mio" (2 desimal); < 1 juta -> "876 K" (dipotong); < 1000 ditulis apa adanya.
+  // Nilai hanya DIPOTONG (tidak dibulatkan); persentase selalu dihitung dari angka asli, bukan angka tampilan.
+  if(!isFinite(n) || n === 0) return "Rp 0";
+  const abs = Math.abs(n), sign = n < 0 ? "-" : "";
+  if(abs >= 1e9) return sign + "Rp " + _trunc(abs/1e9, 3) + " Bio";
+  if(abs >= 1e6) return sign + "Rp " + _trunc(abs/1e6, 2) + " Mio";
+  if(abs >= 1e3) return sign + "Rp " + Math.floor(abs/1e3 + 1e-6) + " K";
+  return sign + "Rp " + Math.floor(abs);
+};
+/** Formatter angka generik untuk metric Views/Video (bukan Rupiah). */
+const fmtNum = (n, compact=true) => {
+  const rounded = Math.round(n);
+  if(!compact) return rounded.toLocaleString('id-ID',{maximumFractionDigits:0});
+  const abs = Math.abs(rounded);
+  if(abs >= 1e9) return (rounded/1e9).toFixed(2) + " M";
+  if(abs >= 1e6) return (rounded/1e6).toFixed(1) + " Jt";
+  if(abs >= 1e3) return (rounded/1e3).toFixed(1) + " Rb";
+  return rounded.toLocaleString('id-ID',{maximumFractionDigits:0});
+};
+/** Pilih formatter sesuai metric yang sedang aktif — dipakai di semua tempat
+ *  render (KPI, chart, tabel, nav, tooltip) supaya tidak perlu percabangan
+ *  berulang di tiap fungsi. */
+const fmtVal = (n, compact=true) => state.metric === 'revenue' ? fmtIDR(n, compact) : fmtNum(n, compact);
+const pct = n => (n>0?"+":"") + n.toFixed(2) + "%";
+const gapClass = n => n >= 0 ? "gap-up" : "gap-down";
+const arrow = n => n >= 0 ? "▲" : "▼";
+
+/** Ambil objek angka (target, closing, yearlyTarget, ...) untuk scope
+ *  (channel/unit) tertentu di sebuah periode. channelName=null -> Grand Total. */
+function _scopeAt(period, channelName, unitName){
+  const p = periodsIndex[period];
+  if(!p) return null;
+  if(!channelName) return p.GRAND;
+  const ch = p.DATA.find(c => c.name === channelName);
+  if(!ch) return null;
+  if(!unitName) return ch.total;
+  return ch.units.find(u => u.name === unitName) || null;
+}
+function _closingForScopeAt(period, channelName, unitName){
+  const s = _scopeAt(period, channelName, unitName);
+  return s ? s.closing : null;
+}
+function _sumClosingOverPeriodsAt(periodsArr, channelName, unitName){
+  let total = 0, found = 0;
+  periodsArr.forEach(pr => { const v = _closingForScopeAt(pr, channelName, unitName); if(v !== null){ total += v; found++; } });
+  return found > 0 ? { value: total, monthsFound: found, monthsWanted: periodsArr.length } : null;
+}
+
+/** Proyeksi Est. Closing End of Year (run-rate):
+ *    EOY = YTD Est. Closing (Jan s/d bulan terpilih) + (YTD / n bulan ber-data) x sisa bulan
+ *  Target Tahunan diambil dari kolom "Target Tahunan" (periode terpilih). */
+function computeEOY(channelName, unitName, period){
+  const { y, m } = parsePeriod(period || currentPeriod);
+  let ytd = 0, n = 0;
+  for(let mm = 1; mm <= m; mm++){
+    const sc = _scopeAt(periodKey(y, mm), channelName, unitName);
+    if(sc){ ytd += sc.closing; n++; }
+  }
+  let yearlyTarget = 0;
+  for(let mm = m; mm >= 1 && !yearlyTarget; mm--){
+    const sc = _scopeAt(periodKey(y, mm), channelName, unitName);
+    if(sc && sc.yearlyTarget > 0) yearlyTarget = sc.yearlyTarget;
+  }
+  return _finishEOY({ year:y, month:m, n, ytd, yearlyTarget });
+}
+function _finishEOY(o){
+  const remaining = 12 - o.month;
+  const avg = o.n > 0 ? o.ytd / o.n : 0;
+  const run = avg * remaining;
+  const eoy = o.ytd + run;
+  return {
+    ...o, remaining, avg, run, eoy,
+    ach: o.yearlyTarget > 0 ? (eoy / o.yearlyTarget) * 100 : null,
+    ytdAch: o.yearlyTarget > 0 ? (o.ytd / o.yearlyTarget) * 100 : null,
+    gap: eoy - o.yearlyTarget,
+    needPerMonth: remaining > 0 ? (o.yearlyTarget - o.ytd) / remaining : null,
+  };
+}
+/** Gabungkan beberapa EOY (mis. subtotal Marketing_category dari beberapa Type). */
+function sumEOY(list){
+  const first = list[0];
+  return _finishEOY({
+    year:first.year, month:first.month,
+    n: Math.max(...list.map(e => e.n)),
+    ytd: list.reduce((s,e)=>s+e.ytd,0),
+    yearlyTarget: list.reduce((s,e)=>s+e.yearlyTarget,0),
+  });
+}
+function _growthPct(curr, prior){
+  if(curr === null || prior === null || prior === undefined || prior === 0) return null;
+  return ((curr - prior) / prior) * 100;
+}
+
+/** Hitung growth untuk mode ('mom'|'qoq'|'yoy') pada scope channel/unit tertentu.
+ *  channelName=null -> Grand Total (Semua Channel). unitName=null -> total channel. */
+function computeComparison(mode, channelName, unitName){
+  const curr = _closingForScopeAt(currentPeriod, channelName, unitName);
+  if(mode === 'mom'){
+    const priorPeriod = shiftMonth(currentPeriod, -1);
+    const prior = _closingForScopeAt(priorPeriod, channelName, unitName);
+    return { curr, prior, growth:_growthPct(curr,prior), priorLabel:formatPeriodLabel(priorPeriod), vs:`vs ${formatPeriodLabel(priorPeriod)}` };
+  }
+  if(mode === 'yoy'){
+    const priorPeriod = shiftMonth(currentPeriod, -12);
+    const prior = _closingForScopeAt(priorPeriod, channelName, unitName);
+    return { curr, prior, growth:_growthPct(curr,prior), priorLabel:formatPeriodLabel(priorPeriod), vs:`vs ${formatPeriodLabel(priorPeriod)}` };
+  }
+  // qoq: quarter-to-date vs periode sepadan di quarter sebelumnya
+  const qtdMonths = quarterMonthsToDate(currentPeriod);
+  const qtdPriorMonths = priorQuarterMonthsToDate(currentPeriod);
+  const currAgg = _sumClosingOverPeriodsAt(qtdMonths, channelName, unitName);
+  const priorAgg = _sumClosingOverPeriodsAt(qtdPriorMonths, channelName, unitName);
+  const growth = (currAgg && priorAgg) ? _growthPct(currAgg.value, priorAgg.value) : null;
+  return {
+    curr: currAgg ? currAgg.value : null,
+    prior: priorAgg ? priorAgg.value : null,
+    growth,
+    priorLabel: `Quarter sebelumnya`,
+    vs: `QTD ${qtdMonths.length} bln vs Q sebelumnya`,
+  };
+}
+
+/** Ganti lensa pertumbuhan aktif (dipanggil dari klik kartu compare) tanpa reload data. */
+function setCompareMode(mode){
+  state.compareMode = mode;
+  renderKPIs();
+  renderNav();
+  renderChart();
+  renderCompareNav();
+}
+
+/* ============ TICKER ============ */
+function buildTicker(){
+  const metricInfo = METRICS[state.metric];
+  const totalLabel = metricInfo.hasMtd ? 'EST. CLOSING' : `TOTAL ${metricInfo.label.toUpperCase()}`;
+  const periodLbl = (typeof formatPeriodLabel === 'function' && currentPeriod) ? formatPeriodLabel(currentPeriod).toUpperCase() : currentPeriod;
+  const items = [
+    `${metricInfo.label.toUpperCase()} ACHIEVEMENT <b>${GRAND.achPct.toFixed(2)}%</b>`,
+    ...DATA.map(c => `${c.name.toUpperCase()} GAP <span class="${c.total.gapPct>=0?'up':'down'}">${arrow(c.total.gapPct)} ${pct(c.total.gapPct)}</span>`),
+    `${totalLabel} <b>${fmtVal(GRAND.closing,false)}</b>`,
+    `TARGET ${periodLbl} <b>${fmtVal(GRAND.target,false)}</b>`,
+  ];
+  const html = items.map(t => `<span>${t}</span>`).join('');
+  document.getElementById('tickerTrack').innerHTML = html + html; // duplicate for seamless loop
+}
+
+/* ============ KPI CARDS ============ */
+function currentScope(){
+  if(state.unit) return {label: state.unit.name, data: state.unit, isUnit:true};
+  if(state.channel) return {label: state.channel.name, data: state.channel.total, isUnit:false};
+  return {label:"Semua Marketing", data: GRAND, isUnit:false};
+}
+
+/** Rincian per Marketing_category untuk kartu Est. Revenue / Est. Closing.
+ *  Level Semua Marketing -> satu baris per Category (B2B, B2C, ...).
+ *  Saat drill-down ke Type/Business -> satu baris: Category induknya. */
+function _catSplit(key){
+  const isAch = key === 'achPct';
+  const fmt = v => isAch ? v.toFixed(2) + '%' : fmtVal(v, false);
+  const sumBy = list => isAch ? _aggregate(list.map(c => c.total)).achPct : list.reduce((s,c)=> s + c.total[key], 0);
+  if(state.channel){
+    const cat = state.channel.category || 'Marketing';
+    return [{ label: cat, value: fmt(state.unit ? state.unit[key] : state.channel.total[key]) }];
+  }
+  const cats = [];
+  DATA.forEach(c => {
+    const name = c.category || 'Lainnya';
+    let g = cats.find(x => x.name === name);
+    if(!g){ g = { name, list: [] }; cats.push(g); }
+    g.list.push(c);
+  });
+  return cats.map(g => ({ label: g.name, value: fmt(sumBy(g.list)) }));
+}
+
+function renderKPIs(){
+  const scope = currentScope();
+  const d = scope.data;
+  const channelName = state.channel ? state.channel.name : null;
+  const unitName = state.unit ? state.unit.name : null;
+  const cards = [
+    {label:"Target Bulan", value: fmtVal(d.target,false), accent:"var(--amber)", delta:null, split:_catSplit("target")},
+    {label:"MTD Target", value: fmtVal(d.mtdTarget,false), accent:"var(--muted-2)", delta:null, split:_catSplit("mtdTarget")},
+    {label:"Est. Revenue", value: fmtVal(d.actual,false), accent:"var(--teal)", delta:null, split:_catSplit("actual")},
+    {label:"Est. Closing", value: fmtVal(d.closing,false), accent:"var(--green)", delta:null, split:_catSplit("closing")},
+    {label:"Achievement %", value: d.achPct.toFixed(2)+"%", accent: d.gapPct>=0?"var(--green)":"var(--red)", delta: d.gapPct, split:_catSplit("achPct")},
+  ];
+
+  if(state.compareMode !== 'all'){
+    const cmp = computeComparison(state.compareMode, channelName, unitName);
+    const cmpLabel = COMPARE_LABELS[state.compareMode];
+    cards.push({label:`Growth · ${cmpLabel}`, value: cmp.growth===null ? "N/A" : pct(cmp.growth), accent: cmp.growth===null?"var(--muted-2)":(cmp.growth>=0?"var(--green)":"var(--red)"), delta:null, isGrowth:true, cmp});
+  }
+
+  document.getElementById('kpiGrid').style.setProperty('--n', cards.length);
+  document.getElementById('kpiGrid').innerHTML = cards.map(c => `
+    <div class="kpi-card">
+      <div class="accent-bar" style="background:${c.accent}"></div>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+      ${c.isGrowth
+        ? `<div class="kpi-delta ${c.cmp.growth===null?'flat':(c.cmp.growth>=0?'up':'down')}">${c.cmp.prior!==null ? fmtVal(c.cmp.curr,false)+' vs '+fmtVal(c.cmp.prior,false) : 'Data pembanding tidak tersedia'}</div>`
+        : c.delta!==null ? `<div class="kpi-delta ${c.delta>0?'up':c.delta<0?'down':'flat'}">${c.delta>0?'▲':c.delta<0?'▼':'—'} ${c.label==='Achievement %' ? pct(c.delta)+' vs MTD' : fmtVal(Math.abs(c.delta),false)+' vs target'}</div>` : (c.split ? '' : `<div class="kpi-delta flat">&nbsp;</div>`)}
+      ${(!c.isGrowth && c.split) ? `<div class="kpi-split">${c.split.map(x=>`<div><span>${x.label}</span><b>${x.value}</b></div>`).join('')}</div>` : ''}
+    </div>
+  `).join('');
+
+}
+
+/** Panel rinci proyeksi End of Year + rumusnya (selalu ditampilkan). */
+function renderEOYPanel(elId, scopeLabel, e){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const monLabel = ID_MONTHS[e.month-1];
+  const hasT = e.yearlyTarget > 0;
+  const projPct = hasT ? Math.min((e.eoy/e.yearlyTarget)*100, 100) : 0;
+  const ytdPct = hasT ? Math.min((e.ytd/e.yearlyTarget)*100, 100) : 0;
+  const stat = (l, v, d, hl) => `<div class="eoy-stat ${hl?'hl':''}"><div class="l">${l}</div><div class="v">${v}</div>${d?`<div class="d">${d}</div>`:''}</div>`;
+  const gapTxt = hasT ? `<span class="${e.gap>=0?'gap-up':'gap-down'}">${e.gap>=0?'▲ +':'▼ -'}${fmtVal(Math.abs(e.gap),false)}</span>` : 'N/A';
+  let need = 'N/A', needD = '';
+  if(e.remaining === 0){ need = '—'; needD = 'Tahun sudah berakhir'; }
+  else if(hasT){
+    need = fmtVal(Math.max(e.needPerMonth,0),false);
+    needD = e.needPerMonth <= 0 ? 'Target sudah terlampaui di YTD' : `vs rata-rata YTD ${fmtVal(e.avg,false)}`;
+  }
+  el.innerHTML = `
+    <div class="eoy-head">
+      <div class="eoy-title">Proyeksi Est. Closing End of Year ${e.year} · ${scopeLabel}</div>
+      <div class="eoy-sub">YTD Jan–${monLabel} (${e.n} bln ber-data) + run-rate ${e.remaining} bulan tersisa</div>
+    </div>
+    <div class="eoy-grid">
+      ${stat(`YTD Est. Closing`, fmtVal(e.ytd,false), hasT ? `${e.ytdAch.toFixed(2)}% dari target tahunan` : '')}
+      ${stat(`Rata-rata / bulan`, fmtVal(e.avg,false), `${e.n} bulan`)}
+      ${stat(`Proyeksi ${e.remaining} bln tersisa`, fmtVal(e.run,false), `${e.remaining} × rata-rata`)}
+      ${stat(`Est. Closing EOY`, fmtVal(e.eoy,false), hasT ? `${e.ach.toFixed(2)}% dari target tahunan` : 'Target tahunan belum diisi', true)}
+      ${stat(`Target Tahunan`, hasT ? fmtVal(e.yearlyTarget,false) : 'Belum diisi', '')}
+      ${stat(`Gap EOY vs Target`, gapTxt, '')}
+      ${stat(`Dibutuhkan / bulan`, need, needD)}
+    </div>
+    ${hasT ? `
+    <div class="eoy-bar"><i class="proj" style="width:${projPct}%"></i><i class="ytd" style="width:${ytdPct}%"></i></div>
+    <div class="eoy-bar-legend"><span><i style="background:var(--teal)"></i>YTD (${ytdPct.toFixed(1)}%)</span><span><i style="background:rgba(14,116,144,0.35)"></i>Proyeksi EOY (${e.ach.toFixed(1)}% dari target)</span></div>` : ''}
+    <div class="eoy-formula">Est. Closing EOY = YTD Est. Closing (Jan–${monLabel}) + (YTD ÷ ${e.n} bulan) × ${e.remaining} bulan tersisa · Achievement EOY % = Est. Closing EOY ÷ Target Tahunan × 100</div>`;
+}
+
+/* ============ NAV ============ */
+let openChannels = new Set();
+
+function renderNav(){
+  const wrap = document.getElementById('navChannels');
+  const isAll = state.compareMode === 'all';
+
+  const grandGapEl = document.getElementById('navAllGap');
+  if(isAll){
+    grandGapEl.textContent = pct(GRAND.gapPct);
+    grandGapEl.className = 'nav-channel-gap' + (GRAND.gapPct>=0?' gap-up':' gap-down');
+    grandGapEl.title = 'Gap MTD vs Target';
+  } else {
+    const grandCmp = computeComparison(state.compareMode, null, null);
+    grandGapEl.textContent = grandCmp.growth===null ? 'N/A' : pct(grandCmp.growth);
+    grandGapEl.className = 'nav-channel-gap' + (grandCmp.growth===null ? '' : (grandCmp.growth>=0?' gap-up':' gap-down'));
+    grandGapEl.title = `${COMPARE_LABELS[state.compareMode]} · Gap MTD: ${pct(GRAND.gapPct)}`;
+  }
+
+  wrap.innerHTML = DATA.map((c, ci) => {
+    const isOpen = openChannels.has(ci);
+    const isActiveChannel = state.channel === c && !state.unit;
+
+    let chGrowthTxt, chGrowthClass, chTitle;
+    if(isAll){
+      chGrowthTxt = pct(c.total.gapPct); chGrowthClass = c.total.gapPct>=0?'gap-up':'gap-down'; chTitle = 'Gap MTD vs Target';
+    } else {
+      const chCmp = computeComparison(state.compareMode, c.name, null);
+      chGrowthTxt = chCmp.growth===null ? 'N/A' : pct(chCmp.growth);
+      chGrowthClass = chCmp.growth===null ? '' : (chCmp.growth>=0?'gap-up':'gap-down');
+      chTitle = `${COMPARE_LABELS[state.compareMode]} · Gap MTD: ${pct(c.total.gapPct)}`;
+    }
+
+    const prevCat = ci > 0 ? DATA[ci-1].category : null;
+    const catLabel = (c.category && c.category !== prevCat) ? `<div class="nav-cat">${c.category}</div>` : '';
+    return `${catLabel}
+    <div class="nav-channel ${isOpen?'open':''} ${isActiveChannel?'active':''}" data-ci="${ci}">
+      <div class="nav-channel-head" data-action="channel" data-ci="${ci}">
+        <div class="nav-channel-name"><span class="chip" style="background:${c.color}"></span>${c.name}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="nav-channel-gap ${chGrowthClass}" title="${chTitle}">${chGrowthTxt}</span>
+          <span class="caret" data-action="toggle" data-ci="${ci}">▶</span>
+        </div>
+      </div>
+      <div class="nav-units">
+        ${c.units.map((u,ui) => {
+          let uGrowthTxt, uGrowthClass, uTitle;
+          if(isAll){
+            uGrowthTxt = pct(u.gapPct); uGrowthClass = u.gapPct>=0?'gap-up':'gap-down'; uTitle = 'Gap MTD vs Target';
+          } else {
+            const uCmp = computeComparison(state.compareMode, c.name, u.name);
+            uGrowthTxt = uCmp.growth===null ? 'N/A' : pct(uCmp.growth);
+            uGrowthClass = uCmp.growth===null ? '' : (uCmp.growth>=0?'gap-up':'gap-down');
+            uTitle = `${COMPARE_LABELS[state.compareMode]} · Gap MTD: ${pct(u.gapPct)}`;
+          }
+          return `
+          <div class="nav-unit ${state.unit===u?'active':''}" data-action="unit" data-ci="${ci}" data-ui="${ui}">
+            <span>${u.name}</span>
+            <span class="nav-unit-gap ${uGrowthClass}" title="${uTitle}">${uGrowthTxt}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('navAll').classList.toggle('active', !state.channel && !state.unit);
+
+  // bind events
+  wrap.querySelectorAll('[data-action="channel"]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      const ci = +el.dataset.ci;
+      if(e.target.dataset.action === 'toggle'){ 
+        openChannels.has(ci) ? openChannels.delete(ci) : openChannels.add(ci);
+      } else {
+        state.channel = DATA[ci]; state.unit = null;
+        openChannels.add(ci);
+      }
+      renderAll();
+    });
+  });
+  wrap.querySelectorAll('[data-action="unit"]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const ci = +el.dataset.ci, ui = +el.dataset.ui;
+      state.channel = DATA[ci];
+      state.unit = DATA[ci].units[ui];
+      openChannels.add(ci);
+      renderAll();
+    });
+  });
+}
+
+document.getElementById('navAll').addEventListener('click', ()=>{
+  state.channel = null; state.unit = null;
+  renderAll();
+});
+
+/* ============ CHART (dependency-free SVG) ============ */
+const COLOR_TARGET = '#D97706';
+const COLOR_ACTUAL = '#0891B2';
+
+function niceMax(v){
+  if(v<=0) return 10;
+  const mag = Math.pow(10, Math.floor(Math.log10(v)));
+  const norm = v/mag;
+  let step;
+  if(norm<=1) step=1; else if(norm<=2) step=2; else if(norm<=5) step=5; else step=10;
+  return step*mag;
+}
+
+const COLOR_COMPARE = '#7C3AED';
+
+function renderChart(){
+  const wrap = document.getElementById('chartWrap');
+  const toggleGroup = document.getElementById('fullMtdToggle');
+  let labels, targetVals, actualVals, targetLabel, actualLabel;
+  let rowChannelNames, rowUnitNames;
+
+  if(state.unit){
+    labels = [state.unit.name];
+    rowChannelNames = [state.channel.name];
+    rowUnitNames = [state.unit.name];
+  } else if(state.channel){
+    labels = state.channel.units.map(u=>u.name);
+    rowChannelNames = state.channel.units.map(()=>state.channel.name);
+    rowUnitNames = state.channel.units.map(u=>u.name);
+  } else {
+    labels = DATA.map(c=>c.name);
+    rowChannelNames = DATA.map(c=>c.name);
+    rowUnitNames = DATA.map(()=>null);
+  }
+
+  const getRow = (idx) => {
+    if(state.unit) return state.unit;
+    if(state.channel) return state.channel.units[idx];
+    return DATA[idx].total;
+  };
+  const n = labels.length;
+  const rows = Array.from({length:n}, (_,i)=>getRow(i));
+  const metricInfo = METRICS[state.metric];
+  if(toggleGroup) toggleGroup.style.display = metricInfo.hasMtd ? '' : 'none';
+
+  if(!metricInfo.hasMtd){
+    // Views/Video: tidak ada konsep MTD, selalu Target vs Total
+    targetVals = rows.map(r=>r.target);
+    actualVals = rows.map(r=>r.closing);
+    targetLabel = `Target ${metricInfo.label}`;
+    actualLabel = `Total ${metricInfo.label}`;
+  } else if(state.mode === 'full'){
+    targetVals = rows.map(r=>r.target);
+    actualVals = rows.map(r=>r.closing);
+    targetLabel = "Target (Full Month)";
+    actualLabel = "Est. Closing (Proyeksi)";
+  } else {
+    targetVals = rows.map(r=>r.mtdTarget);
+    actualVals = rows.map(r=>r.actual);
+    targetLabel = "MTD Target";
+    actualLabel = "Est. Revenue (Aktual)";
+  }
+
+  // Bar ke-3: closing periode pembanding, mengikuti lensa MoM/QoQ/YoY yang aktif.
+  // Kalau mode "Semua" dipilih, tidak ada lensa spesifik -> kembali ke tampilan 2-bar original.
+  const showCompareBar = state.compareMode !== 'all';
+  const cmpLabel = COMPARE_LABELS[state.compareMode];
+  const compareLabel = metricInfo.hasMtd ? `Est. Closing (Pembanding ${cmpLabel})` : `Total ${metricInfo.label} (Pembanding ${cmpLabel})`;
+  const compareVals = showCompareBar
+    ? rowChannelNames.map((chName, i) => computeComparison(state.compareMode, chName, rowUnitNames[i]).prior)
+    : rows.map(()=>null);
+
+  document.getElementById('chartLegend').innerHTML = showCompareBar ? `
+    <span><i style="background:${COLOR_TARGET}"></i>${targetLabel}</span>
+    <span><i style="background:${COLOR_ACTUAL}"></i>${actualLabel}</span>
+    <span><i style="background:${COLOR_COMPARE}"></i>${compareLabel}</span>
+  ` : `
+    <span><i style="background:${COLOR_TARGET}"></i>${targetLabel}</span>
+    <span><i style="background:${COLOR_ACTUAL}"></i>${actualLabel}</span>
+  `;
+
+  // ---- geometry ----
+  const W = 900, H = 340;
+  const marginL = 78, marginR = 16, marginT = 16, marginB = 56;
+  const plotW = W - marginL - marginR;
+  const plotH = H - marginT - marginB;
+
+  const allVals = [...targetVals, ...actualVals, ...compareVals.filter(v=>v!==null), 1];
+  const maxVal = niceMax(Math.max(...allVals) * 1.12);
+  const yTicks = 5;
+  const scaleY = v => plotH - (v/maxVal)*plotH;
+
+  const groupW = plotW / n;
+  const barCount = showCompareBar ? 3 : 2;
+  const barW = Math.min(barCount===3?32:40, groupW*(barCount===3?0.2:0.26));
+  const barGap = 5;
+
+  let gridSVG = '';
+  for(let i=0;i<=yTicks;i++){
+    const val = maxVal * i/yTicks;
+    const y = marginT + scaleY(val);
+    gridSVG += `<line x1="${marginL}" y1="${y}" x2="${W-marginR}" y2="${y}" class="grid-line"/>`;
+    gridSVG += `<text x="${marginL-10}" y="${y+4}" text-anchor="end" class="axis-label" font-size="10.5">${fmtVal(val)}</text>`;
+  }
+
+  let barsSVG = '';
+  let labelsSVG = '';
+  const tooltipData = [];
+  const groupTotalW = barCount*barW + (barCount-1)*barGap;
+
+  rows.forEach((r, i)=>{
+    const cx = marginL + groupW*i + groupW/2;
+    const startX = cx - groupTotalW/2;
+    const tX = startX;
+    const aX = startX + barW + barGap;
+    const cX = startX + 2*(barW + barGap);
+
+    const tVal = targetVals[i], aVal = actualVals[i], cVal = compareVals[i];
+    const tY = marginT + scaleY(tVal), aY = marginT + scaleY(aVal);
+    const tH = plotH - scaleY(tVal), aH = plotH - scaleY(aVal);
+
+    let compareBarSVG = '';
+    if(showCompareBar && cVal !== null){
+      const cY = marginT + scaleY(cVal), cH = plotH - scaleY(cVal);
+      compareBarSVG = `<rect x="${cX}" y="${cY}" width="${barW}" height="${Math.max(cH,1)}" rx="4" fill="${COLOR_COMPARE}" fill-opacity="0.85"></rect>`;
+    }
+
+    barsSVG += `
+      <g class="bargroup" data-idx="${i}">
+        <rect x="${tX}" y="${tY}" width="${barW}" height="${Math.max(tH,1)}" rx="4" fill="${COLOR_TARGET}" fill-opacity="0.9"></rect>
+        <rect x="${aX}" y="${aY}" width="${barW}" height="${Math.max(aH,1)}" rx="4" fill="${COLOR_ACTUAL}"></rect>
+        ${compareBarSVG}
+      </g>`;
+
+    const label = labels[i].length > 14 ? labels[i].slice(0,13)+'…' : labels[i];
+    labelsSVG += `<text x="${cx}" y="${H-marginB+22}" text-anchor="middle" class="axis-label" font-size="11">${label}</text>`;
+
+    tooltipData.push({ name: labels[i], tVal, aVal, cVal, cx });
+  });
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%; height:340px; display:block; overflow:visible;">
+      ${gridSVG}
+      ${barsSVG}
+      ${labelsSVG}
+      <line x1="${marginL}" y1="${marginT+plotH}" x2="${W-marginR}" y2="${marginT+plotH}" stroke="#20262F" stroke-width="1"/>
+    </svg>
+    <div class="chart-tooltip" id="chartTooltip"></div>
+  `;
+
+  const tooltip = document.getElementById('chartTooltip');
+
+  wrap.querySelectorAll('.bargroup').forEach(g=>{
+    const idx = +g.dataset.idx;
+    const d = tooltipData[idx];
+    g.addEventListener('mousemove', (e)=>{
+      const rect = wrap.getBoundingClientRect();
+      const px = (d.cx / W) * rect.width;
+      tooltip.innerHTML = `
+        <div class="tt-title">${d.name}</div>
+        <div class="tt-row"><span style="color:${COLOR_TARGET}">${targetLabel}</span><b>&nbsp;${fmtVal(d.tVal,false)}</b></div>
+        <div class="tt-row"><span style="color:${COLOR_ACTUAL}">${actualLabel}</span><b>&nbsp;${fmtVal(d.aVal,false)}</b></div>
+        ${showCompareBar ? (d.cVal!==null ? `<div class="tt-row"><span style="color:${COLOR_COMPARE}">${compareLabel}</span><b>&nbsp;${fmtVal(d.cVal,false)}</b></div>` : `<div class="tt-row"><span style="color:${COLOR_COMPARE}">${compareLabel}</span><b>&nbsp;N/A</b></div>`) : ''}
+      `;
+      tooltip.style.left = Math.min(Math.max(px-70,0), rect.width-170) + 'px';
+      tooltip.style.top = '4px';
+      tooltip.classList.add('show');
+    });
+    g.addEventListener('mouseleave', ()=> tooltip.classList.remove('show'));
+    g.addEventListener('click', ()=>{
+      // clicking a bar in "all channels" or "channel units" view drills down, mirroring nav
+      if(!state.channel){ state.channel = DATA[idx]; openChannels.add(idx); renderAll(); }
+      else if(!state.unit){ state.unit = state.channel.units[idx]; renderAll(); }
+    });
+  });
+}
+
+/* ============ TABLE ============ */
+/** Hitung kontribusi (satuan 0.1%) tiap baris terhadap `base` dengan
+ *  largest-remainder method (Hamilton): jumlah seluruh baris = tepat 1000 (=100.0%). */
+function _contribTenths(rows, base){
+  if(!base || base <= 0) return rows.map(()=> 0);
+  const exact = rows.map(r => (r.closing / base) * 1000);
+  const floors = exact.map(v => Math.floor(v));
+  let deficit = Math.round(1000 - floors.reduce((s,v)=>s+v,0));
+  const order = exact.map((v,i)=>({i, rem: v - floors[i]})).sort((a,b)=> b.rem - a.rem);
+  const out = floors.slice();
+  for(let k=0; k<order.length && deficit>0; k++){ out[order[k].i] += 1; deficit--; }
+  return out;
+}
+const _fmtTenths = t => (t/10).toFixed(1) + '%';
+
+function renderTable(){
+  const body = document.getElementById('tableBody');
+  const head = document.getElementById('tableHead');
+  const chName = state.channel ? state.channel.name : null;
+  let items = [];   // {row, kind:'item'|'cat'|'total', eoy, tenths, indent}
+  let firstColLabel;
+
+  if(state.unit){
+    firstColLabel = 'Business';
+    const r = state.unit;
+    items.push({ row:r, kind:'item', eoy: computeEOY(chName, r.name), tenths:1000 });
+  } else if(state.channel){
+    firstColLabel = 'Business';
+    const rows = state.channel.units;
+    const tenths = _contribTenths(rows, state.channel.total.closing);
+    rows.forEach((r,i) => items.push({ row:r, kind:'item', eoy: computeEOY(chName, r.name), tenths:tenths[i] }));
+    items.push({ row:{name: state.channel.name + ' Total', ...state.channel.total}, kind:'total', eoy: computeEOY(chName, null), tenths:1000 });
+  } else {
+    firstColLabel = 'Marketing Category / Type';
+    const typeRows = DATA.map(c => ({name:c.name, ...c.total}));
+    const tenths = _contribTenths(typeRows, GRAND.closing);
+    const cats = [];
+    DATA.forEach((c,i) => {
+      let g = cats.find(x => x.name === c.category);
+      if(!g){ g = {name:c.category, idx:[]}; cats.push(g); }
+      g.idx.push(i);
+    });
+    cats.forEach(g => {
+      const hasCat = !!g.name;
+      if(hasCat){
+        const agg = _aggregate(g.idx.map(i => DATA[i].total));
+        items.push({ row:{name:g.name + ' Total', ...agg}, kind:'cat',
+          eoy: sumEOY(g.idx.map(i => computeEOY(DATA[i].name, null))),
+          tenths: g.idx.reduce((s,i)=>s+tenths[i],0) });
+      }
+      g.idx.forEach(i => items.push({ row:typeRows[i], kind:'item', indent:hasCat, eoy: computeEOY(DATA[i].name, null), tenths:tenths[i] }));
+    });
+    items.push({ row:{name:'Grand Total', ...GRAND}, kind:'total', eoy: computeEOY(null,null), tenths:1000 });
+  }
+
+  head.innerHTML = `<tr>
+    <th>${firstColLabel}</th><th>Target</th><th>MTD Target</th><th>Est. Revenue</th><th>Est. Closing</th>
+    <th>MTD %</th><th>Achv %</th><th>Gap MTD %</th><th>Contribution</th>
+    <th>Target Tahunan</th><th>Est. Closing EOY</th><th>Achv EOY %</th>
+  </tr>`;
+
+  body.innerHTML = items.map(it => {
+    const r = it.row, e = it.eoy;
+    const cls = it.kind==='total' ? 'total-row' : (it.kind==='cat' ? 'cat-row' : '');
+    const eoyAch = e.ach===null ? 'N/A' : e.ach.toFixed(2)+'%';
+    return `
+      <tr class="${cls}">
+        <td class="${it.indent?'indent':''}">${r.name}</td>
+        <td>${fmtVal(r.target,false)}</td>
+        <td>${fmtVal(r.mtdTarget,false)}</td>
+        <td>${fmtVal(r.actual,false)}</td>
+        <td>${fmtVal(r.closing,false)}</td>
+        <td>${r.mtdPct.toFixed(2)}%</td>
+        <td>${r.achPct.toFixed(2)}%</td>
+        <td class="${gapClass(r.gapPct)}">${arrow(r.gapPct)} ${pct(r.gapPct)}</td>
+        <td>${_fmtTenths(it.tenths)}</td>
+        <td>${e.yearlyTarget>0 ? fmtVal(e.yearlyTarget,false) : '-'}</td>
+        <td>${fmtVal(e.eoy,false)}</td>
+        <td class="${e.ach===null?'':(e.ach>=100?'gap-up':'gap-down')}">${eoyAch}</td>
+      </tr>`;
+  }).join('');
+
+  const note = document.getElementById('tableFootnote');
+  if(note){
+    const baseLabel = state.unit ? 'baris itu sendiri' : (state.channel ? `Total ${state.channel.name}` : 'Grand Total');
+    note.textContent = `Contribution = (Est. Closing baris ÷ Est. Closing ${baseLabel}) × 100, dibulatkan 1 desimal (largest-remainder) sehingga jumlah baris data tepat 100.0%; subtotal Marketing Category = jumlah Type di dalamnya. Est. Closing EOY = YTD Est. Closing + (YTD ÷ n bulan) × sisa bulan; Achv EOY % = Est. Closing EOY ÷ Target Tahunan × 100.`;
+  }
+}
+
+/* ============ SCOPE HEADER ============ */
+function renderScopeHeader(){
+  const title = document.getElementById('scopeTitle');
+  const sub = document.getElementById('scopeSub');
+  const metricInfo = METRICS[state.metric];
+  const actualWord = metricInfo.hasMtd ? (state.mode==='full'?'Est. Closing':'Est. Revenue') : `Total ${metricInfo.label}`;
+  if(state.unit){
+    title.textContent = state.unit.name;
+    sub.textContent = `Business dalam ${state.channel.name} — Target vs ${actualWord}`;
+  } else if(state.channel){
+    title.textContent = state.channel.name;
+    sub.textContent = `Perbandingan Target vs Aktual per Business`;
+  } else {
+    title.textContent = "Semua Marketing";
+    sub.textContent = "Perbandingan Target vs Aktual per Marketing Type";
+  }
+}
+
+/* ============ COMPARE MODE SELECTOR (compact, di NavPane) ============ */
+function renderCompareNav(){
+  const wrap = document.getElementById('navCompareList');
+  const hasHistory = Object.keys(periodsIndex).length > 1;
+
+  if(!hasHistory){
+    wrap.innerHTML = `<div class="compare-empty-note">Data historis belum tersedia. Tambahkan kolom <b>Period</b> (format YYYY-MM) di Google Sheet untuk mengaktifkan MoM/QoQ/YoY.</div>`;
+    return;
+  }
+
+  const channelName = state.channel ? state.channel.name : null;
+  const unitName = state.unit ? state.unit.name : null;
+  const scopeData = currentScope().data;
+
+  const items = ['all','mom','qoq','yoy'].map(mode => {
+    if(mode === 'all'){
+      return { mode, label:'Semua', valueTxt: pct(scopeData.gapPct), valueClass: scopeData.gapPct>=0?'gap-up':'gap-down', title:'Tampilan default (Gap MTD vs Target), tanpa lensa pertumbuhan periode' };
+    }
+    const c = computeComparison(mode, channelName, unitName);
+    const valueTxt = c.growth===null ? 'N/A' : pct(c.growth);
+    const valueClass = c.growth===null ? '' : (c.growth>=0?'gap-up':'gap-down');
+    return { mode, label: COMPARE_LABELS[mode], valueTxt, valueClass, title: `${c.vs}${c.prior!==null ? ' · '+fmtVal(c.curr,false)+' vs '+fmtVal(c.prior,false) : ''}` };
+  });
+
+  wrap.innerHTML = items.map(it => `
+    <div class="nav-compare-item ${state.compareMode===it.mode ? 'active':''}" data-mode="${it.mode}" title="${it.title}">
+      <span>${it.label}</span>
+      <span class="nav-compare-value ${it.valueClass}">${it.valueTxt}</span>
+    </div>
+  `).join('') + (comparisonsAreSynthetic ? `<div class="compare-empty-note">* data historis contoh (demo)</div>` : '');
+
+  wrap.querySelectorAll('[data-mode]').forEach(el=>{
+    el.addEventListener('click', ()=> setCompareMode(el.dataset.mode));
+  });
+}
+
+/* ============ MODE TOGGLE ============ */
+document.querySelectorAll('.toggle-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = btn.dataset.mode;
+    renderChart();
+    renderScopeHeader();
+  });
+});
+
+/* ============ MASTER RENDER ============ */
+function renderAll(){
+  renderKPIs();
+  renderNav();
+  renderChart();
+  renderTable();
+  renderScopeHeader();
+  renderCompareNav();
+}
+
+/* ============ DATA SOURCE BADGE ============ */
+function setDataSrcBadge(kind, text){
+  const badge = document.getElementById('dataSrcBadge');
+  badge.className = 'datasrc ' + kind;
+  document.getElementById('dataSrcText').textContent = text;
+}
+function updateHeaderCounts(){
+  const totalUnits = DATA.reduce((s,c)=>s+c.units.length, 0);
+  const periodLabel = (typeof formatPeriodLabel === 'function' && currentPeriod) ? formatPeriodLabel(currentPeriod) : currentPeriod;
+  document.getElementById('headerSub').innerHTML =
+    `Target periode ${periodLabel} &nbsp;·&nbsp; ${new Set(DATA.map(c=>c.category).filter(Boolean)).size} Marketing Category / ${DATA.length} Marketing Type / ${totalUnits} Business`;
+  const titleEl = document.getElementById('dashTitle');
+  const metricInfo = METRICS[state.metric];
+  const titleWord = metricInfo.key === 'revenue' ? 'Pendapatan' : metricInfo.label;
+  if(titleEl) titleEl.textContent = `Pantauan ${titleWord} — ${periodLabel}`;
+  updateDataAsOfNote();
+}
+
+/** "Data as of" = today() - 3 hari, dihitung ulang tiap render supaya selalu
+ *  akurat mengikuti tanggal sebenarnya saat dashboard dibuka. */
+function updateDataAsOfNote(){
+  const el = document.getElementById('dataAsOfNote');
+  if(!el) return;
+  const d = new Date();
+  d.setDate(d.getDate() - 3);
+  const label = `${d.getDate()} ${ID_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  el.textContent = `Data as of ${label}`;
+}
+
+/* ============ LOAD FROM GOOGLE SHEET (dengan fallback ke sample) ============ */
+let autoRefreshTimer = null;
+
+/** Bangun metricsData (semua metric) untuk SATU source dari hasil live-fetch
+ *  tab tsb, dengan fallback demo per-metric kalau metric itu belum ada di tab. */
+/** Bikin unit/channel/GRAND versi nol — dipakai saat source SUDAH terhubung
+ *  (tab-nya berhasil dibaca) tapi metric tertentu (mis. Views/Video) memang
+ *  belum diisi angkanya sama sekali. Ini BUKAN data contoh/demo — ini
+ *  representasi "belum ada data" yang jujur menampilkan 0, memakai struktur
+ *  channel/unit dari metric lain yang SUDAH ada datanya di source yang sama. */
+function _zeroUnit(u){
+  return { name:u.name, target:0, mtdTarget:0, actual:0, closing:0, yearlyTarget:0, mtdPct:0, achPct:0, gapPct:0 };
+}
+function _zeroChannel(c){
+  return { name:c.name, category:c.category, color:c.color, total:{target:0,mtdTarget:0,actual:0,closing:0,yearlyTarget:0,mtdPct:0,achPct:0,gapPct:0}, units: c.units.map(_zeroUnit) };
+}
+function buildZeroMetricsDataFrom(referenceMetricData){
+  const periodsIndex = {};
+  Object.keys(referenceMetricData.periodsIndex).forEach(period => {
+    const ref = referenceMetricData.periodsIndex[period];
+    periodsIndex[period] = { DATA: ref.DATA.map(_zeroChannel), GRAND: {target:0,mtdTarget:0,actual:0,closing:0,yearlyTarget:0,mtdPct:0,achPct:0,gapPct:0} };
+  });
+  return {
+    periodsIndex,
+    currentPeriod: referenceMetricData.currentPeriod,
+    latestActualPeriod: referenceMetricData.latestActualPeriod,
+    comparisonsAreSynthetic: false, // bukan demo — ini live, cuma kebetulan nol
+    isEmptyMetric: true,
+  };
+}
+
+function buildMetricsDataForSource(source, liveMetricsIndex){
+  const metricsData = {};
+  const found = [];
+
+  if(liveMetricsIndex){
+    // Source ini TERHUBUNG (tab-nya berhasil dibaca). Metric yang tidak ada
+    // datanya di tab ini bukan berarti "belum connect" — cukup tampilkan 0,
+    // bukan data contoh, supaya tidak disalahartikan sebagai angka riil.
+    METRIC_ORDER.forEach(key => {
+      const live = liveMetricsIndex[key];
+      if(live){
+        metricsData[key] = { periodsIndex: live.periodsIndex, currentPeriod: live.currentPeriod, latestActualPeriod: live.currentPeriod, comparisonsAreSynthetic: false, isEmptyMetric: false };
+        found.push(key);
+      }
+    });
+    // pakai metric pertama yang ketemu sebagai referensi struktur channel/unit untuk metric yang kosong
+    const referenceKey = found[0];
+    METRIC_ORDER.forEach(key => {
+      if(!metricsData[key]){
+        metricsData[key] = referenceKey
+          ? buildZeroMetricsDataFrom(metricsData[referenceKey])
+          : buildSyntheticMetricsData(source)[key]; // edge case: tab kebaca tapi tidak ada satupun metric valid
+      }
+    });
+  } else {
+    // Source ini TIDAK terhubung sama sekali (tab gagal/tidak ada) -> demo penuh
+    const synthetic = buildSyntheticMetricsData(source);
+    METRIC_ORDER.forEach(key => { metricsData[key] = synthetic[key]; });
+  }
+
+  return { metricsData, found };
+}
+
+async function loadData(isManualRefresh=false){
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true;
+  setDataSrcBadge('loading', isManualRefresh ? 'Menyegarkan data...' : 'Memuat data...');
+
+  sourcesData = {};
+  let anyLive = false;
+  const perSourceNote = [];
+
+  try {
+    const allResults = await loadAllSourcesFromSheet(SHEET_CONFIG); // { marketing:{ok,metricsIndex|error} }
+    SOURCE_ORDER.forEach(source => {
+      const res = allResults[source];
+      if(res && res.ok){
+        const { metricsData: md, found } = buildMetricsDataForSource(source, res.metricsIndex);
+        sourcesData[source] = md;
+        if(found.length){
+          anyLive = true;
+          if(found.length < METRIC_ORDER.length){
+            perSourceNote.push(`${SOURCES[source].label}: sebagian`);
+          }
+        } else {
+          perSourceNote.push(`${SOURCES[source].label}: contoh`);
+        }
+      } else {
+        console.warn(`[sheet-config] Tab "${SHEET_CONFIG.sourceSheets[source]}" gagal:`, res && res.error);
+        const { metricsData: md } = buildMetricsDataForSource(source, null);
+        sourcesData[source] = md;
+        perSourceNote.push(`${SOURCES[source].label}: contoh`);
+      }
+    });
+
+    const now = new Date();
+    if(anyLive){
+      const note = perSourceNote.length ? ` (${perSourceNote.join(', ')})` : '';
+      setDataSrcBadge('live', `Live dari Google Sheet · ${now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}${note}`);
+    } else {
+      setDataSrcBadge('error', 'Belum ada tab sheet yang terbaca — pakai data contoh');
+    }
+  } catch(e) {
+    console.warn('[sheet-config] Fetch gagal total, fallback ke data contoh:', e.message);
+    try {
+      SOURCE_ORDER.forEach(source => { sourcesData[source] = buildSyntheticMetricsData(source); });
+    } catch(e2){
+      console.warn('[fallback] Gagal bangun data historis contoh:', e2.message);
+      sourcesData = {};
+      SOURCE_ORDER.forEach(source => {
+        sourcesData[source] = {};
+        METRIC_ORDER.forEach(key => {
+          const sample = SAMPLE_BY_SOURCE[source][key];
+          sourcesData[source][key] = {
+            periodsIndex: { [SAMPLE_CURRENT_PERIOD]: { DATA: sample.DATA, GRAND: sample.GRAND } },
+            currentPeriod: SAMPLE_CURRENT_PERIOD, latestActualPeriod: SAMPLE_CURRENT_PERIOD, comparisonsAreSynthetic: true,
+          };
+        });
+      });
+    }
+    setDataSrcBadge('error', 'Gagal ambil Google Sheet — pakai data contoh');
+  }
+
+  try { await loadLeagueData(); } catch(eL){ console.warn('[league] gagal:', eL.message); }
+
+  // aktifkan source + metric yang sedang dipilih (default 'marketing'/'revenue' kalau tidak tersedia)
+  if(!sourcesData[state.source]) state.source = 'marketing';
+  metricsData = sourcesData[state.source];
+  if(!metricsData[state.metric]) state.metric = 'revenue';
+  state.channel = null; state.unit = null;
+  const active = metricsData[state.metric];
+  periodsIndex = active.periodsIndex;
+  currentPeriod = active.currentPeriod;
+  latestActualPeriod = active.latestActualPeriod;
+  comparisonsAreSynthetic = active.comparisonsAreSynthetic;
+  isEmptyMetric = !!active.isEmptyMetric;
+  DATA = periodsIndex[currentPeriod].DATA;
+  GRAND = periodsIndex[currentPeriod].GRAND;
+  updateHeaderCounts();
+
+  try {
+    buildTicker();
+    renderAll();
+    renderPeriodSelector();
+    renderSourceTabs();
+    renderMetricTabs();
+    renderPageTabs();
+    if(currentPage === 'report') renderReportOverview();
+    if(currentPage === 'league') renderLeague();
+  } catch(e3){
+    console.error('[render] Gagal render dashboard:', e3);
+    showFatalError(e3);
+  }
+  btn.disabled = false;
+}
+
+/* ============ PILIH SOURCE (YouTube / Meta / TikTok) ============ */
+function renderSourceTabs(){
+  const wrap = document.getElementById('sourceTabs');
+  if(!wrap) return;
+  const available = SOURCE_ORDER.filter(key => sourcesData[key]);
+  wrap.innerHTML = `<span class="tabs-label">Source</span>` + available.map(key => `
+    <button class="source-tab ${state.source===key?'active':''}" data-source="${key}">${SOURCES[key].label}</button>
+  `).join('');
+  wrap.querySelectorAll('[data-source]').forEach(btn=>{
+    btn.addEventListener('click', ()=> setSource(btn.dataset.source));
+  });
+}
+
+/** Pindah ke source lain (Marketing). Menyalin metricsData source
+ *  tsb dari sourcesData, mempertahankan metric yang lagi dipilih kalau
+ *  tersedia di source baru (kalau tidak, fallback ke 'revenue'), lalu
+ *  menyalin metric aktif itu ke variabel DATA/GRAND/periodsIndex seperti biasa. */
+function setSource(source){
+  if(!sourcesData[source] || state.source === source) return;
+  state.source = source;
+  metricsData = sourcesData[source];
+  if(!metricsData[state.metric]) state.metric = 'revenue';
+  state.channel = null; state.unit = null;
+  periodListExpanded = false;
+  expandedYears = new Set();
+
+  const md = metricsData[state.metric];
+  periodsIndex = md.periodsIndex;
+  currentPeriod = md.currentPeriod;
+  latestActualPeriod = md.latestActualPeriod;
+  comparisonsAreSynthetic = md.comparisonsAreSynthetic;
+  isEmptyMetric = !!md.isEmptyMetric;
+  DATA = periodsIndex[currentPeriod].DATA;
+  GRAND = periodsIndex[currentPeriod].GRAND;
+
+  renderSourceTabs();
+  renderMetricTabs();
+  renderPeriodSelector();
+  updateHeaderCounts();
+  buildTicker();
+  renderAll();
+  updatePaceChip();
+  if(typeof currentPage !== 'undefined' && currentPage === 'report') renderReportOverview();
+}
+
+/* ============ PILIH METRIC (Revenue / Views / Video) ============ */
+function renderMetricTabs(){
+  const wrap = document.getElementById('metricTabs');
+  if(!wrap) return;
+  const available = METRIC_ORDER.filter(key => metricsData[key]);
+  wrap.innerHTML = available.map(key => `
+    <button class="metric-tab ${state.metric===key?'active':''}" data-metric="${key}">${METRICS[key].label}</button>
+  `).join('');
+  wrap.querySelectorAll('[data-metric]').forEach(btn=>{
+    btn.addEventListener('click', ()=> setMetric(btn.dataset.metric));
+  });
+
+  const note = document.getElementById('metricEmptyNote');
+  if(note){
+    note.textContent = isEmptyMetric
+      ? `Belum ada data ${METRICS[state.metric].label} untuk ${SOURCES[state.source].label} — menampilkan 0`
+      : '';
+  }
+}
+
+/** Pindah ke metric lain (Revenue/Views/Video). Menyalin data metric tsb dari
+ *  metricsData ke variabel aktif (DATA/GRAND/periodsIndex/currentPeriod/...),
+ *  lalu render ulang semuanya — sama seperti setViewPeriod() untuk periode. */
+function setMetric(metric){
+  if(!metricsData[metric] || state.metric === metric) return;
+  state.metric = metric;
+  state.channel = null; state.unit = null;
+  periodListExpanded = false;
+  expandedYears = new Set();
+
+  const md = metricsData[metric];
+  periodsIndex = md.periodsIndex;
+  currentPeriod = md.currentPeriod;
+  latestActualPeriod = md.latestActualPeriod;
+  comparisonsAreSynthetic = md.comparisonsAreSynthetic;
+  isEmptyMetric = !!md.isEmptyMetric;
+  DATA = periodsIndex[currentPeriod].DATA;
+  GRAND = periodsIndex[currentPeriod].GRAND;
+
+  renderMetricTabs();
+  renderPeriodSelector();
+  updateHeaderCounts();
+  buildTicker();
+  renderAll();
+  updatePaceChip();
+}
+
+/* ============ PILIH BULAN & TAHUN (Periode) ============ */
+const DEFAULT_PERIOD_LIMIT = 13;
+let periodListExpanded = false;
+
+/** Isi dropdown periode: default cuma 13 bulan terbaru (biar ringkas), dengan
+ *  link "Lihat N bulan sebelumnya" untuk buka semua riwayat kalau perlu. */
+function renderPeriodSelector(){
+  const sel = document.getElementById('periodSelect');
+  const hint = document.getElementById('periodHint');
+  if(!sel) return;
+  const allPeriods = Object.keys(periodsIndex).sort().reverse(); // "YYYY-MM" -> urut string aman, terbaru duluan
+
+  let visiblePeriods = allPeriods;
+  let hiddenCount = 0;
+  if(!periodListExpanded && allPeriods.length > DEFAULT_PERIOD_LIMIT){
+    visiblePeriods = allPeriods.slice(0, DEFAULT_PERIOD_LIMIT);
+    // pastikan periode yang sedang aktif tetap tampil meski lebih lama dari 13 bulan terbaru
+    if(!visiblePeriods.includes(currentPeriod) && allPeriods.includes(currentPeriod)){
+      visiblePeriods = visiblePeriods.concat([currentPeriod]).sort().reverse();
+    }
+    hiddenCount = allPeriods.length - visiblePeriods.length;
+  }
+
+  sel.innerHTML = visiblePeriods.map(p => {
+    const isLive = p === latestActualPeriod;
+    return `<option value="${p}" ${p===currentPeriod?'selected':''}>${formatPeriodLabel(p)}${isLive?' (berjalan)':''}</option>`;
+  }).join('');
+
+  if(hint){
+    if(hiddenCount > 0){
+      hint.innerHTML = `<button type="button" class="period-more-link" id="periodMoreBtn">Lihat ${hiddenCount} bulan sebelumnya ▾</button>`;
+      document.getElementById('periodMoreBtn').addEventListener('click', ()=>{ periodListExpanded = true; renderPeriodSelector(); });
+    } else if(periodListExpanded && allPeriods.length > DEFAULT_PERIOD_LIMIT){
+      hint.innerHTML = `<button type="button" class="period-more-link" id="periodLessBtn">Tampilkan ringkas ▴</button>`;
+      document.getElementById('periodLessBtn').addEventListener('click', ()=>{ periodListExpanded = false; renderPeriodSelector(); });
+    } else {
+      hint.innerHTML = '';
+    }
+  }
+
+  updatePaceChip();
+}
+
+/** Pindah "sudut pandang" dashboard ke bulan/tahun lain yang dipilih user.
+ *  Semua yang ada (KPI, NavPane, Chart, Tabel, MoM/QoQ/YoY) otomatis mengikuti
+ *  karena semuanya membaca dari variabel global DATA/GRAND/currentPeriod ini. */
+function setViewPeriod(period){
+  if(!periodsIndex[period]) return;
+  currentPeriod = period;
+  DATA = periodsIndex[period].DATA;
+  GRAND = periodsIndex[period].GRAND;
+
+  // jaga seleksi channel/unit tetap valid di periode baru (kalau ada datanya)
+  if(state.channel){
+    const match = DATA.find(c => c.name === state.channel.name);
+    state.channel = match || null;
+    if(state.unit && state.channel){
+      state.unit = state.channel.units.find(u => u.name === state.unit.name) || null;
+    } else {
+      state.unit = null;
+    }
+  }
+
+  updateHeaderCounts();
+  buildTicker();
+  renderAll();
+  updatePaceChip();
+}
+
+/** Progress bulan (hari ke-N dari 31) cuma relevan untuk periode berjalan yang
+ *  sungguhan (MTD). Kalau user sedang lihat bulan/tahun lain, ganti jadi catatan
+ *  "data historis, final" dan tetap tampilkan Achievement % secara dinamis. */
+function updatePaceChip(){
+  const achEl = document.getElementById('paceAch');
+  const achBar = document.querySelector('.pace-chip .pace-bar .ach');
+  if(achEl) achEl.textContent = GRAND.achPct.toFixed(2) + '%';
+  if(achBar) achBar.style.width = Math.min(Math.max(GRAND.achPct,0),100) + '%';
+
+  const elapsedRow = document.getElementById('paceElapsedRow');
+  const legend = document.getElementById('paceLegend');
+  const isLive = currentPeriod === latestActualPeriod;
+
+  if(elapsedRow) elapsedRow.style.display = isLive ? '' : 'none';
+  let dayTxt = 'Periode berjalan';
+  if(isLive){
+    const ref = new Date(); ref.setDate(ref.getDate() - 3);   // selaras dengan "Data as of"
+    const {y:py, m:pm} = parsePeriod(currentPeriod);
+    const dim = new Date(py, pm, 0).getDate();
+    const sameMonth = ref.getFullYear()===py && (ref.getMonth()+1)===pm;
+    const day = sameMonth ? ref.getDate() : dim;
+    const pctE = (day/dim)*100;
+    const elTxt = document.getElementById('paceElapsed'); if(elTxt) elTxt.textContent = pctE.toFixed(1)+'%';
+    const elBar = document.querySelector('.pace-bar .elapsed'); if(elBar) elBar.style.width = pctE+'%';
+    dayTxt = `Hari ke-${day} dari ${dim}`;
+  }
+  if(legend){
+    legend.innerHTML = isLive
+      ? `<span><i class="dot" style="background:var(--muted-2)"></i>${dayTxt}</span><span><i class="dot" style="background:var(--green)"></i>${GRAND.gapPct>=0?'Ahead of pace':'Below pace'}</span>`
+      : `<span><i class="dot" style="background:var(--amber)"></i>Data historis · ${formatPeriodLabel(currentPeriod)} (final, bukan MTD)</span>`;
+  }
+}
+
+document.getElementById('periodSelect').addEventListener('change', (e)=> setViewPeriod(e.target.value));
+
+/** Tampilkan pesan error yang JELAS TERLIHAT di halaman (bukan blank/diam saja)
+ *  kalau ada kegagalan tak terduga saat render, supaya mudah dilaporkan/didiagnosis. */
+function showFatalError(err){
+  const box = document.createElement('div');
+  box.style.cssText = 'margin:16px 32px; padding:14px 18px; border-radius:10px; background:rgba(220,38,38,0.1); border:1px solid #DC2626; color:#DC2626; font-family:JetBrains Mono, monospace; font-size:12.5px; white-space:pre-wrap;';
+  box.textContent = 'Terjadi error saat menampilkan dashboard: ' + (err && err.message ? err.message : String(err)) + '\n\nCoba refresh halaman. Kalau tetap muncul, screenshot pesan ini untuk dilaporkan.';
+  document.body.insertBefore(box, document.body.firstChild);
+}
+window.addEventListener('error', (e)=>{ console.error('[window.onerror]', e.error || e.message); });
+window.addEventListener('unhandledrejection', (e)=>{ console.error('[unhandledrejection]', e.reason); });
+
+/* =========================================================================
+   SALES LEAGUE — Corporate & Wholesales
+   Achievement per sales = Actual / Target, untuk New Acquisition, Recurring, dan Total.
+   Periode: Bulanan (pilih bulan) | 3 bulan terakhir | 6 bulan terakhir | All (Januari s/d bulan terbaru).
+   ========================================================================= */
+let leagueRows = [];
+let leagueIsDemo = true;
+let leagueState = { range:'month', month:null, segment:'all', rank:'kpi', asm:'all' };
+const LEAGUE_SEGMENTS = [
+  {key:'all', label:'Semua'}, {key:'corp', label:'Corporate'},
+  {key:'Corporate (Organic)', label:'Corporate (Organic)'}, {key:'Corporate (SAM)', label:'Corporate (SAM)'},
+  {key:'Wholesales', label:'Wholesales'},
+];
+const LEAGUE_RANKS = [ {key:'kpi', label:'KPI Score'}, {key:'total', label:'Achv Bulanan'}, {key:'new', label:'New Acquisition'}, {key:'rec', label:'Recurring'} ];
+const LEAGUE_RANK_KEY = { kpi:'score', total:'achTot', new:'achNew', rec:'achRec' };
+const LEAGUE_RANK_LABEL = { kpi:'KPI Score', total:'Achievement Bulanan', new:'New Acquisition', rec:'Recurring' };
+
+/** Data contoh (demo): 16 sales, riwayat Sep 2025 - Okt 2026, deterministik. */
+function buildDemoLeagueRows(){
+  const roster = [
+    // nama, join, unit, segment, arpu, targetNew, targetRec, performa
+    ["Dewi Lestari","2022-07-20","Corporate","Corporate (Organic)","High ARPU",120e6,130e6,1.22],
+    ["Budi Santoso","2021-03-15","Corporate","Corporate (Organic)","High ARPU",120e6,130e6,1.16],
+    ["Rina Maharani","2023-05-02","Corporate","Corporate (Organic)","High ARPU",110e6,125e6,1.04],
+    ["Agus Pratama","2024-02-12","Corporate","Corporate (Organic)","Middle-Low ARPU",100e6,110e6,0.91],
+    ["Maya Putri","2025-06-01","Corporate","Corporate (Organic)","Middle-Low ARPU",90e6,100e6,0.72],
+    ["Bayu Nugroho","2020-09-07","Corporate","Corporate (Organic)","High ARPU",120e6,130e6,0.62],
+    ["Andi Wijaya","2022-01-10","Corporate","Corporate (SAM)","High ARPU",90e6,110e6,1.12],
+    ["Sari Dewanti","2023-08-21","Corporate","Corporate (SAM)","High ARPU",90e6,110e6,0.98],
+    ["Eko Prasetyo","2021-11-03","Corporate","Corporate (SAM)","Middle-Low ARPU",80e6,100e6,0.84],
+    ["Fitri Handayani","2026-03-10","Corporate","Corporate (SAM)","Middle-Low ARPU",70e6,90e6,0.58],
+    ["Siti Rahma","2023-01-10","Wholesales","Wholesales","Middle-Low ARPU",70e6,110e6,1.03],
+    ["Hendra Gunawan","2022-04-18","Wholesales","Wholesales","Middle-Low ARPU",70e6,110e6,1.09],
+    ["Lina Marlina","2024-07-01","Wholesales","Wholesales","Middle-Low ARPU",60e6,100e6,0.89],
+    ["Rudi Hartono","2021-06-14","Wholesales","Wholesales","High ARPU",80e6,120e6,0.77],
+    ["Tika Anjani","2025-09-15","Wholesales","Wholesales","Middle-Low ARPU",60e6,90e6,0.66],
+    ["Yoga Permana","2020-02-24","Wholesales","Wholesales","High ARPU",80e6,120e6,0.95],
+  ];
+  const regions = ["Jakarta","Jakarta","Bandung","Surabaya","Medan","Jakarta","Surabaya","Semarang","Bandung","Makassar","Jakarta","Surabaya","Medan","Bandung","Makassar","Semarang"];
+  const asmByRegion = { "Jakarta":"Hendro Wibowo", "Bandung":"Wulan Sari", "Surabaya":"Dimas Aryanto", "Medan":"Rizky Harahap", "Semarang":"Nia Kurniasih", "Makassar":"Ahmad Fauzi" };
+  const rows = [];
+  for(let back = 13; back >= 0; back--){
+    const period = shiftMonth(SAMPLE_CURRENT_PERIOD, -back);
+    roster.forEach((r, ri) => {
+      const [name, join, unit, segment, arpu, tN, tR, perf] = r;
+      if(join.slice(0,7) > period) return;           // belum bergabung
+      const nN = 1 + (_seededRand(name + '|n|' + period) - 0.5) * 0.30;
+      const nR = 1 + (_seededRand(name + '|r|' + period) - 0.5) * 0.20;
+      const base = Math.round(tR * 5);                // recurring base (kontrak berjalan)
+      const tFu = unit === 'Corporate' ? 30 : 40;      // target follow-up calon pelanggan baru / bulan
+      const tcPct = 2;                                // target churn 2% / bulan
+      const rate = tcPct * Math.max(0.15, 1.9 - perf * 0.8 + (_seededRand(name + '|c|' + period) - 0.5) * 0.6); // makin bagus performa, makin rendah churn
+      rows.push({ period, name, join, unit, segment, arpu, region: regions[ri], asm: asmByRegion[regions[ri]],
+        tNew:tN, tRec:tR, aNew: Math.round(tN * perf * nN * (0.9 + _seededRand(name+'|b') * 0.2)),
+        aRec: Math.round(tR * perf * nR),
+        base, churn: Math.round(base * rate / 100), tcPct,
+        tFu, aFu: Math.round(tFu * Math.max(0.2, 0.55 + perf * 0.45 + (_seededRand(name + '|f|' + period) - 0.5) * 0.2)) });
+    });
+  }
+  return rows;
+}
+
+async function loadLeagueData(){
+  let rows = null;
+  try { rows = await fetchLeagueRows(SHEET_CONFIG); } catch(e){ console.warn('[league]', e.message); }
+  if(rows && rows.length){ leagueRows = rows; leagueIsDemo = false; }
+  else { leagueRows = buildDemoLeagueRows(); leagueIsDemo = true; }
+  const periods = leaguePeriods();
+  if(!leagueState.month || !periods.includes(leagueState.month)) leagueState.month = periods[periods.length-1];
+}
+
+function leaguePeriods(){ return Array.from(new Set(leagueRows.map(r => r.period))).sort(); }
+function leagueLatest(){ const p = leaguePeriods(); return p[p.length-1]; }
+
+/** Daftar periode (YYYY-MM) yang dicakup pilihan rentang aktif. */
+function leagueRangePeriods(){
+  const latest = leagueLatest();
+  const r = leagueState.range;
+  if(r === 'month') return [leagueState.month || latest];
+  if(r === '3m' || r === '6m'){
+    const n = r === '3m' ? 3 : 6;
+    return Array.from({length:n}, (_,i) => shiftMonth(latest, -(n-1-i)));
+  }
+  const { y, m } = parsePeriod(latest);          // all: Januari s/d bulan terbaru di tahun berjalan
+  return Array.from({length:m}, (_,i) => periodKey(y, i+1));
+}
+function leagueRangeLabel(){
+  const ps = leagueRangePeriods();
+  return ps.length === 1 ? formatPeriodLabel(ps[0]) : `${formatPeriodLabel(ps[0])} – ${formatPeriodLabel(ps[ps.length-1])}`;
+}
+
+/** Hitung semua persentase + KPI Score dari jumlah (target/aktual/churn). Dipakai per sales DAN level total. */
+function leagueCompute(a){
+  const cfg = SHEET_CONFIG.salesLeague;
+  const pctOf = (x, t) => t > 0 ? (x / t) * 100 : null;
+  a.tTot = a.tNew + a.tRec; a.aTot = a.aNew + a.aRec;
+  a.achNew = pctOf(a.aNew, a.tNew);      // vs Target New Acquisition
+  a.achRec = pctOf(a.aRec, a.tRec);      // vs Target Recurring
+  a.achTot = pctOf(a.aTot, a.tTot);      // vs Target Bulanan (New + Recurring)
+  // churn
+  a.churnPct = a.hasChurn && a.base > 0 ? (a.churn / a.base) * 100 : null;
+  a.tcAvg = a.hasChurn && a.base > 0 && a.tcW !== null ? a.tcW / a.base : null;       // target churn % (rata-rata tertimbang base)
+  if(a.churnPct === null || a.tcAvg === null) a.churnScore = null;
+  else if(a.churnPct === 0) a.churnScore = 100;
+  else if(a.tcAvg <= 0) a.churnScore = 0;
+  else a.churnScore = Math.min(100, (a.tcAvg / a.churnPct) * 100);
+  // activity: follow-up calon pelanggan baru, realisasi / target
+  a.actPct = a.hasFu && a.tFu > 0 ? (a.aFu / a.tFu) * 100 : null;
+  a.actScore = a.actPct === null ? null : Math.min(a.actPct, cfg.actCap);
+  // KPI Score = rata-rata tertimbang komponen yang datanya ada (bobot dinormalisasi ulang bila ada komponen kosong)
+  const w = cfg.weights;
+  a.achCapped = a.achTot === null ? null : Math.min(a.achTot, cfg.achCap);
+  const parts = [[w.achievement, a.achCapped], [w.churn, a.churnScore], [w.activity, a.actScore]].filter(x => x[1] !== null && x[0] > 0);
+  const wsum = parts.reduce((t, x) => t + x[0], 0);
+  a.score = (a.achCapped === null || !wsum) ? null : parts.reduce((t, x) => t + x[0] * x[1], 0) / wsum;
+  return a;
+}
+
+/** Agregasi per sales untuk rentang + segment aktif. */
+function leagueFilteredRows(withAsm){
+  const per = new Set(leagueRangePeriods());
+  const seg = leagueState.segment;
+  return leagueRows
+    .filter(r => per.has(r.period))
+    .filter(r => seg === 'all' || (seg === 'corp' ? r.unit === 'Corporate' : r.segment === seg))
+    .filter(r => !withAsm || leagueState.asm === 'all' || (r.asm || r.region) === leagueState.asm);
+}
+/** Daftar ASM (atau Regional kalau ASM kosong) untuk dropdown, mengikuti filter Periode + Segment. */
+function leagueAsmOptions(){
+  const m = new Map();
+  leagueFilteredRows(false).forEach(r => {
+    const k = r.asm || r.region; if(!k) return;
+    if(!m.has(k)) m.set(k, { key:k, hasAsm:!!r.asm, regions:new Set() });
+    if(r.region) m.get(k).regions.add(r.region);
+  });
+  return Array.from(m.values()).sort((a,b) => a.key.localeCompare(b.key));
+}
+
+function leagueAggregate(){
+  const by = new Map();
+  leagueFilteredRows(true)
+    .sort((a,b) => a.period.localeCompare(b.period))
+    .forEach(r => {
+      let a = by.get(r.name);
+      if(!a){ a = { name:r.name, tNew:0, aNew:0, tRec:0, aRec:0, churn:0, base:0, tcW:null, hasChurn:false, tFu:0, aFu:0, hasFu:false, months:0 }; by.set(r.name, a); }
+      if(r.tFu !== null && r.tFu !== undefined){ a.hasFu = true; a.tFu += r.tFu; a.aFu += (r.aFu || 0); }
+      a.tNew += r.tNew; a.aNew += r.aNew; a.tRec += r.tRec; a.aRec += r.aRec; a.months++;
+      if(r.churn !== null && r.churn !== undefined && r.base > 0){
+        a.hasChurn = true; a.churn += r.churn; a.base += r.base;
+        if(r.tcPct !== null && r.tcPct !== undefined) a.tcW = (a.tcW || 0) + r.tcPct * r.base;
+      }
+      a.unit = r.unit; a.segment = r.segment;
+      if(r.join) a.join = r.join;
+      if(r.arpu) a.arpu = r.arpu;
+      if(r.region) a.region = r.region;
+      if(r.asm) a.asm = r.asm;
+    });
+  return Array.from(by.values()).map(leagueCompute).filter(a => a.tTot > 0);
+}
+/** Total seluruh sales yang tampil (level organisasi) -> objek yang sama bentuknya. */
+function leagueTotals(list){
+  const t = { tNew:0, aNew:0, tRec:0, aRec:0, churn:0, base:0, tcW:null, hasChurn:false, tFu:0, aFu:0, hasFu:false };
+  list.forEach(a => {
+    if(a.hasFu){ t.hasFu = true; t.tFu += a.tFu; t.aFu += a.aFu; }
+    t.tNew += a.tNew; t.aNew += a.aNew; t.tRec += a.tRec; t.aRec += a.aRec;
+    if(a.hasChurn){ t.hasChurn = true; t.churn += a.churn; t.base += a.base; if(a.tcW !== null) t.tcW = (t.tcW || 0) + a.tcW; }
+  });
+  return leagueCompute(t);
+}
+
+/** Pencapaian per ASM (atau per Regional kalau kolom ASM kosong): akumulasi seluruh sales di timnya. */
+function leagueByAsm(all){
+  const groups = new Map();
+  all.forEach(a => {
+    const k = a.asm || a.region || '';
+    if(!k) return;
+    let g = groups.get(k);
+    if(!g){ g = { name:k, hasAsm:!!a.asm, regions:new Set(), members:[] }; groups.set(k, g); }
+    g.members.push(a); if(a.region) g.regions.add(a.region);
+  });
+  return Array.from(groups.values()).map(g => Object.assign(leagueTotals(g.members), { name:g.name, hasAsm:g.hasAsm, regions:Array.from(g.regions), members:g.members }));
+}
+
+function renderAsm(all, key){
+  const cfg = SHEET_CONFIG.salesLeague, th = cfg.remindBelow;
+  const box = document.getElementById('leagueAsm'), note = document.getElementById('leagueAsmNote');
+  const groups = leagueByAsm(all).filter(g => g[key] !== null).sort((x,y) => y[key] - x[key]);
+  if(!groups.length){
+    note.textContent = '';
+    box.innerHTML = `<div class="lg-empty">Isi kolom <b>ASM</b> (atau <b>Regional/Kota</b>) di tab SalesLeague untuk melihat pencapaian per ASM / regional.</div>`;
+    return;
+  }
+  note.textContent = `Akumulasi seluruh sales dalam tim ASM · diurutkan berdasarkan ${LEAGUE_RANK_LABEL[leagueState.rank]} · ${leagueRangeLabel()}`;
+  const rows = groups.map((g, i) => {
+    const m = g.members.filter(x => x[key] !== null);
+    const onT = m.filter(x => x[key] >= 100).length, low = m.filter(x => x[key] < th).length;
+    const best = m.reduce((x,y) => y[key] > x[key] ? y : x), worst = m.reduce((x,y) => y[key] < x[key] ? y : x);
+    const medal = `<span class="medal ${i < 3 ? 'm' + (i+1) : ''}">${i + 1}</span>`;
+    const rkPill = (k2, p) => _lgPill(p, leagueState.rank === k2 ? 'rk' : '');
+    const churnLine = g.churnPct === null
+      ? `<span class="k">Churn</span> <span>belum ada data</span>`
+      : `<span class="k">Churn</span> <b>${_lgPct(g.churnPct,2)}</b> <span>(target ${_lgPct(g.tcAvg,2)})</span> <span class="k">Skor</span> ${_lgPill(g.churnScore)}`;
+    return `
+    <div class="lg-row as asm">
+      <div class="lg-rank">${medal}</div>
+      <div class="lg-name"><b>${g.name}</b><small>${g.hasAsm ? 'ASM · ' : 'Regional · '}${g.regions.join(', ') || '–'}</small></div>
+      <div class="lg-team"><b>${g.members.length}</b> sales<small>Capai target ${onT} · Perlu reminder ${low}</small></div>
+      <div class="lg-info">
+        <div class="ln"><span class="k">Aktual</span> <b>${fmtIDR(g.aTot)}</b> <span>/ target</span> <b>${fmtIDR(g.tTot)}</b></div>
+        <div class="ln"><span class="k">New</span> ${rkPill('new', g.achNew)} <span class="k">Rec</span> ${rkPill('rec', g.achRec)} <span class="k">Bulanan</span> ${rkPill('total', g.achTot)}</div>
+        <div class="ln">${churnLine}</div>
+        <div class="ln">${actLine(g)}</div>
+      </div>
+      <div class="lg-total">${rkPill('kpi', g.score).replace('class="apill', 'class="apill big')}</div>
+      <div class="lg-note">${m.length > 1 ? `Terbaik: <b>${best.name}</b> (${_lgPct(best[key],0)})<br>Terendah: <b>${worst.name}</b> (${_lgPct(worst[key],0)})` : `Sales: <b>${m[0].name}</b>`}</div>
+    </div>`;
+  }).join('');
+  box.innerHTML = `<div class="lg-head as"><span>Rank</span><span>ASM / Regional</span><span>Tim</span><span>Informasi (Aktual vs Target · Achv · Churn · Activity)</span><span>KPI Score</span><span>Catatan</span></div>` + rows;
+}
+
+function _tenureTier(join){
+  if(!join) return '–';
+  const j = new Date(join + 'T00:00:00');
+  if(isNaN(j)) return '–';
+  const yrs = (Date.now() - j.getTime()) / (365.25 * 24 * 3600 * 1000);
+  return yrs >= 2 ? '> 2 Tahun' : (yrs >= 1 ? '1–2 Tahun' : '< 1 Tahun');
+}
+const _lgPct = (p, d=1) => p === null || p === undefined ? '–' : p.toFixed(d) + '%';
+function _lgPill(p, extra=''){
+  const th = SHEET_CONFIG.salesLeague.remindBelow;
+  const cls = p === null || p === undefined ? 'na' : (p >= 100 ? 'ok' : (p >= th ? 'mid' : 'bad'));
+  return `<span class="apill ${cls} ${extra}">${_lgPct(p)}</span>`;
+}
+
+const actLine = a => a.actPct === null
+  ? `<span class="k">Activity FU</span> <span>belum ada data</span>`
+  : `<span class="k">Activity FU</span> <b>${Math.round(a.aFu)} / ${Math.round(a.tFu)}</b> <span>pelanggan baru</span> ${_lgPill(a.actPct)}`;
+
+function leagueRowHTML(a, idx, kind){
+  const rk = leagueState.rank;
+  const medalCls = kind === 'best' ? (idx < 3 ? 'm' + (idx+1) : '') : 'warn';
+  const medal = `<span class="medal ${medalCls}">${kind === 'best' ? idx + 1 : '!'}</span>`;
+  const comps = [['New Acquisition', a.achNew], ['Recurring', a.achRec], ['Churn', a.churnScore], ['Activity FU', a.actPct]].filter(c => c[1] !== null);
+  let note = '';
+  if(kind === 'best'){
+    if(comps.length){ const top = comps.reduce((x,y) => y[1] > x[1] ? y : x); note = `Terkuat di <b>${top[0]}</b> (${_lgPct(top[1],0)})`; }
+    if(a.aTot > a.tTot) note += `<br>Melampaui target ${fmtIDR(a.aTot - a.tTot)}`;
+  } else {
+    note = a.aTot < a.tTot ? `Kurang <b>${fmtIDR(a.tTot - a.aTot)}</b> ke target bulanan` : 'Target bulanan tercapai, churn perlu dijaga';
+    if(comps.length){ const low = comps.reduce((x,y) => y[1] < x[1] ? y : x); note += `<br>Terlemah: <b>${low[0]}</b> (${_lgPct(low[1],0)})`; }
+  }
+  const rkPill = (key, p) => _lgPill(p, rk === key ? 'rk' : '');
+  const churnLine = a.churnPct === null
+    ? `<span class="k">Churn</span> <span>belum ada data</span>`
+    : `<span class="k">Churn</span> <b>${_lgPct(a.churnPct,2)}</b> <span>(target ${_lgPct(a.tcAvg,2)})</span> <span class="k">Skor</span> ${_lgPill(a.churnScore)}`;
+  return `
+  <div class="lg-row ${kind}">
+    <div class="lg-rank">${medal}</div>
+    <div class="lg-name"><b>${a.name}</b><small>Join: ${a.join || '–'}</small></div>
+    <div class="lg-seg">${a.segment}<small>${a.arpu || ''}</small></div>
+    <div class="lg-region">${a.region || '–'}${a.asm ? `<small>ASM: ${a.asm}</small>` : ''}</div>
+    <div class="lg-tier"><span class="tier-badge">${_tenureTier(a.join)}</span></div>
+    <div class="lg-info">
+      <div class="ln"><span class="k">Aktual</span> <b>${fmtIDR(a.aTot)}</b> <span>/ target</span> <b>${fmtIDR(a.tTot)}</b></div>
+      <div class="ln"><span class="k">New</span> ${rkPill('new', a.achNew)} <span class="k">Rec</span> ${rkPill('rec', a.achRec)} <span class="k">Bulanan</span> ${rkPill('total', a.achTot)}</div>
+      <div class="ln">${churnLine}</div>
+      <div class="ln">${actLine(a)}</div>
+    </div>
+    <div class="lg-total">${rkPill('kpi', a.score).replace('class="apill', 'class="apill big')}</div>
+    <div class="lg-note">${note}</div>
+  </div>`;
+}
+const _lgHead = () => `<div class="lg-head"><span>Rank</span><span>Nama AE/AM</span><span>Divisi &amp; Segment</span><span>Regional/Kota</span><span>Masa Kerja</span><span>Informasi (Aktual vs Target · Achv · Churn · Activity)</span><span>KPI Score</span><span>Catatan</span></div>`;
+
+function renderLeague(){
+  if(!leagueRows.length) return;
+  const cfg = SHEET_CONFIG.salesLeague;
+  const wA = cfg.weights.achievement, wC = cfg.weights.churn, wF = cfg.weights.activity;
+  const periods = leaguePeriods();
+  const rk = leagueState.rank;
+  const key = LEAGUE_RANK_KEY[rk];
+
+  // --- kontrol (3 dropdown) ---
+  const latestLbl = ID_MONTHS[parsePeriod(leagueLatest()).m - 1];
+  const periodVal = leagueState.range === 'month' ? 'm:' + leagueState.month : leagueState.range;
+  document.getElementById('leaguePeriodSelect').innerHTML =
+    `<optgroup label="Bulanan">${periods.slice().reverse().map(p => `<option value="m:${p}" ${periodVal==='m:'+p?'selected':''}>${formatPeriodLabel(p)}</option>`).join('')}</optgroup>` +
+    `<optgroup label="Rentang">` +
+      [['3m','3 Bulan Terakhir'],['6m','6 Bulan Terakhir'],['all',`All (Jan – ${latestLbl})`]].map(([k,l]) => `<option value="${k}" ${periodVal===k?'selected':''}>${l}</option>`).join('') +
+    `</optgroup>`;
+  const segLabel = k => k==='all' ? 'Semua' : k==='corp' ? 'Corporate (Organic + SAM)' : k==='Corporate (Organic)' ? 'Corporate › Organic' : k==='Corporate (SAM)' ? 'Corporate › SAM' : 'Wholesales';
+  document.getElementById('leagueSegBtn').textContent = segLabel(leagueState.segment);
+  const segItem = (k, text, cls='', hint='') => `<div class="seg-item ${cls} ${leagueState.segment===k?'on':''}" role="option" data-seg="${k}">${text}${hint?`<small>${hint}</small>`:''}</div>`;
+  document.getElementById('leagueSegMenu').innerHTML =
+    segItem('all','Semua') + segItem('corp','Corporate','','Organic + SAM') +
+    segItem('Corporate (Organic)','Organic','sub') + segItem('Corporate (SAM)','SAM','sub') +
+    segItem('Wholesales','Wholesales');
+  const asmOpts = leagueAsmOptions();
+  if(leagueState.asm !== 'all' && !asmOpts.some(o => o.key === leagueState.asm)) leagueState.asm = 'all';
+  document.getElementById('leagueAsmSelect').innerHTML =
+    `<option value="all">Semua ASM (${asmOpts.length})</option>` +
+    asmOpts.map(o => `<option value="${o.key}" ${leagueState.asm===o.key?'selected':''}>${o.hasAsm ? o.key + ' · ' + Array.from(o.regions).join(', ') : 'Regional ' + o.key}</option>`).join('');
+  document.getElementById('leagueRankSelect').innerHTML = LEAGUE_RANKS.map(c => `<option value="${c.key}" ${rk===c.key?'selected':''}>${c.label}</option>`).join('');
+
+  document.getElementById('leagueSub').innerHTML =
+    `Periode <b>${leagueRangeLabel()}</b> &nbsp;·&nbsp; Corporate (Organic &amp; SAM) + Wholesales` + (leagueState.asm !== 'all' ? ` &nbsp;·&nbsp; ASM: <b>${leagueState.asm}</b>` : '') + ` &nbsp;·&nbsp; ` +
+    (leagueIsDemo ? '<span style="color:var(--amber)">* data contoh (demo) — buat tab "SalesLeague" di Google Sheet</span>' : 'Live dari tab "SalesLeague"');
+
+  // --- agregasi ---
+  const all = leagueAggregate();
+  const T = leagueTotals(all);
+  const eligible = all.filter(a => a[key] !== null);
+  const onTarget = eligible.filter(a => a[key] >= 100).length;
+  const remindAll = eligible.filter(a => a[key] < cfg.remindBelow);
+  const hasChurn = T.churnScore !== null;
+
+  const cards = [
+    {label:'Info Sales', value:`${all.length} <small style="font-size:11px;color:var(--muted);font-weight:400;">sales aktif</small>`, accent:'var(--teal)', split:[
+      {label:'Corp · Wholesales', value:`${all.filter(a=>a.unit==='Corporate').length} · ${all.filter(a=>a.unit==='Wholesales').length}`},
+      {label:`Capai Target (${rk==='kpi'?'KPI':LEAGUE_RANK_LABEL[rk].split(' ')[0]})`, value:`${onTarget} (${eligible.length ? (onTarget/eligible.length*100).toFixed(0) : 0}%)`},
+      {label:'Perlu Reminder', value:`${remindAll.length} (${eligible.length ? (remindAll.length/eligible.length*100).toFixed(0) : 0}%)`}]},
+    {label:'KPI Score', value:_lgPct(T.score), accent:'var(--green)', split:[{label:`Achv ×${wA}%`, value:_lgPct(T.achCapped)},{label:`Churn ×${wC}%`, value:hasChurn ? _lgPct(T.churnScore) : 'belum ada'},{label:`Activity ×${wF}%`, value:T.actScore !== null ? _lgPct(T.actScore) : 'belum ada'}]},
+    {label:'Achievement Bulanan', value:_lgPct(T.achTot), accent:'var(--amber)', split:[{label:'New Acq.', value:_lgPct(T.achNew)},{label:'Recurring', value:_lgPct(T.achRec)}]},
+    {label:'Aktual Revenue', value:fmtIDR(T.aTot), accent:'var(--teal)', split:[{label:'Target', value:fmtIDR(T.tTot)},{label:'Tgt New', value:fmtIDR(T.tNew)}]},
+    {label:'Activity FU', value:T.actPct !== null ? _lgPct(T.actPct) : '–', accent:'var(--teal)', split:[{label:'FU Aktual', value:T.actPct !== null ? Math.round(T.aFu).toLocaleString('id-ID') : '–'},{label:'FU Target', value:T.actPct !== null ? Math.round(T.tFu).toLocaleString('id-ID') : '–'}]},
+    {label:'Churn', value:hasChurn ? _lgPct(T.churnPct,2) : '–', accent:'var(--red)', split:[{label:'Target', value:hasChurn ? _lgPct(T.tcAvg,2) : '–'},{label:'Skor Churn', value:hasChurn ? _lgPct(T.churnScore) : '–'}]},
+  ];
+  const kg = document.getElementById('leagueKpiGrid');
+  kg.style.setProperty('--n', cards.length);
+  kg.innerHTML = cards.map(c => `
+    <div class="kpi-card">
+      <div class="accent-bar" style="background:${c.accent}"></div>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+      <div class="kpi-split">${c.split.map(x => `<div><span>${x.label}</span><b>${x.value}</b></div>`).join('')}</div>
+    </div>`).join('');
+
+  const fm = document.getElementById('leagueFormula');
+  if(fm) fm.innerHTML =
+    `<b>KPI Score</b> = ${wA}% × Achievement Bulanan [maks ${cfg.achCap}%] + ${wC}% × Skor Churn [maks 100%] + ${wF}% × Activity FU [maks ${cfg.actCap}%]` +
+    ((hasChurn && T.actPct !== null) ? '' : ' — <span style="color:var(--amber)">komponen yang datanya belum ada dikeluarkan, bobot sisanya dinormalisasi</span>') +
+    `<br><b>Achv Bulanan</b> = (Actual New + Actual Recurring) ÷ Target Bulanan (New + Recurring) × 100 &nbsp;·&nbsp; <b>Achv New Acquisition</b> = Actual New ÷ Target New × 100 &nbsp;·&nbsp; <b>Achv Recurring</b> = Actual Recurring ÷ (Target Bulanan − Target New) × 100` +
+    `<br><b>ASM / Regional</b> = akumulasi target, aktual, dan churn seluruh sales dalam tim ASM tersebut (bukan rata-rata skor sales), lalu dihitung dengan rumus yang sama` +
+    `<br><b>Activity FU</b> = Actual FU pelanggan baru ÷ Target FU pelanggan baru × 100 (mis. 24 ÷ 30 = 80%)` +
+    `<br><b>Churn %</b> = Churn (Rp) ÷ Recurring Base (Rp) × 100 &nbsp;·&nbsp; <b>Skor Churn</b> = Target Churn % ÷ Churn % aktual × 100 (maks 100%; semakin rendah churn, semakin tinggi skor)`;
+
+  renderAsm(all, key);
+
+  // --- best & reminder (tidak saling tumpang tindih) ---
+  const sorted = eligible.slice().sort((x,y) => y[key] - x[key]);
+  const remind = remindAll.slice().sort((x,y) => x[key] - y[key]).slice(0, cfg.remindN);
+  const remindSet = new Set(remindAll.map(a => a.name));
+  const best = sorted.filter(a => !remindSet.has(a.name)).slice(0, cfg.topN);
+
+  document.getElementById('leagueBestTitle').textContent = `Best Performance · Top ${cfg.topN}`;
+  document.getElementById('leagueBestNote').textContent = `Diurutkan berdasarkan ${LEAGUE_RANK_LABEL[rk]} · ${leagueRangeLabel()}`;
+  document.getElementById('leagueRemindTitle').textContent = 'Reminder · Perlu Perhatian';
+  document.getElementById('leagueRemindNote').textContent = `${LEAGUE_RANK_LABEL[rk]} < ${cfg.remindBelow}%` + (remindAll.length > remind.length ? ` · menampilkan ${remind.length} terendah dari ${remindAll.length}` : '');
+
+  document.getElementById('leagueBest').innerHTML = best.length
+    ? _lgHead() + best.map((a,i) => leagueRowHTML(a, i, 'best')).join('')
+    : `<div class="lg-empty">Belum ada data sales untuk filter ini.</div>`;
+  document.getElementById('leagueRemind').innerHTML = remind.length
+    ? _lgHead() + remind.map((a,i) => leagueRowHTML(a, i, 'remind')).join('')
+    : `<div class="lg-empty">Tidak ada sales di bawah ${cfg.remindBelow}% pada filter ini 🎉</div>`;
+
+  // --- event ---
+  document.getElementById('leaguePeriodSelect').onchange = e => {
+    const v = e.target.value;
+    if(v.startsWith('m:')){ leagueState.range = 'month'; leagueState.month = v.slice(2); } else leagueState.range = v;
+    renderLeague();
+  };
+  const segMenu = document.getElementById('leagueSegMenu'), segBtn = document.getElementById('leagueSegBtn');
+  const setSegOpen = o => { segMenu.hidden = !o; segBtn.setAttribute('aria-expanded', String(o)); };
+  segBtn.onclick = e => { e.stopPropagation(); setSegOpen(segMenu.hidden); };
+  segMenu.querySelectorAll('[data-seg]').forEach(el => el.onclick = e => { e.stopPropagation(); leagueState.segment = el.dataset.seg; setSegOpen(false); renderLeague(); });
+  if(!window._segMenuBound){
+    window._segMenuBound = true;
+    document.addEventListener('click', () => { const m = document.getElementById('leagueSegMenu'); if(m && !m.hidden){ m.hidden = true; document.getElementById('leagueSegBtn').setAttribute('aria-expanded','false'); } });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape'){ const m = document.getElementById('leagueSegMenu'); if(m) m.hidden = true; } });
+  }
+  document.getElementById('leagueAsmSelect').onchange = e => { leagueState.asm = e.target.value; renderLeague(); };
+  document.getElementById('leagueRankSelect').onchange = e => { leagueState.rank = e.target.value; renderLeague(); };
+}
+
+/* =========================================================================
+   REPORT OVERVIEW: BULANAN & TAHUNAN (sub-menu di dalam Revenue Dashboard)
+   Tidak butuh sumber data baru — memakai ulang persis sourcesData[source]
+   .revenue.periodsIndex yang sudah dimuat untuk halaman dashboard utama,
+   cukup diagregasi per-bulan (Section 1) dan per-tahun (Section 2).
+   ========================================================================= */
+
+let currentPage = 'dashboard'; // 'dashboard' | 'report' | 'league'
+let monthlyChartMode = 'column'; // 'column' | 'line'
+
+function renderPageTabs(){
+  const wrap = document.getElementById('pageTabs');
+  if(!wrap) return;
+  const tabs = [
+    { key:'dashboard', label:'Revenue Dashboard' },
+    { key:'report', label:'Report Overview: Bulanan & Tahunan' },
+    { key:'league', label:'Sales League' },
+  ];
+  wrap.innerHTML = tabs.map(t => `<button class="page-tab ${currentPage===t.key?'active':''}" data-page="${t.key}">${t.label}</button>`).join('');
+  wrap.querySelectorAll('[data-page]').forEach(btn=>{
+    btn.addEventListener('click', ()=> setPage(btn.dataset.page));
+  });
+}
+
+function setPage(page){
+  if(currentPage === page) return;
+  currentPage = page;
+  document.getElementById('pageRevenueDashboard').style.display = page === 'dashboard' ? '' : 'none';
+  document.getElementById('pageReportOverview').style.display = page === 'report' ? '' : 'none';
+  document.getElementById('pageSalesLeague').style.display = page === 'league' ? '' : 'none';
+  renderPageTabs();
+  if(page === 'report') renderReportOverview();
+  if(page === 'league') renderLeague();
+}
+
+function renderReportOverview(){
+  document.getElementById('reportHeaderSub').textContent =
+    `Ringkasan eksekutif Revenue Marketing — semua periode yang tersedia di sheet`;
+  renderMonthlyReport();
+  renderYearlyReport();
+  renderEOYReport();
+}
+
+/** Section "Proyeksi End of Year" di Report Overview: Grand Total + rincian per
+ *  Marketing Category / Type, memakai periode berjalan terbaru di sheet. */
+function renderEOYReport(){
+  const md = sourcesData[state.source] && sourcesData[state.source].revenue;
+  const note = document.getElementById('eoyReportNote');
+  const head = document.getElementById('eoyTypeHead'), body = document.getElementById('eoyTypeBody');
+  if(!md){ return; }
+  const per = md.latestActualPeriod || md.currentPeriod;
+  const idx = md.periodsIndex[per];
+  // computeEOY/_scopeAt membaca periodsIndex global -> arahkan sementara ke data revenue
+  const saved = periodsIndex; periodsIndex = md.periodsIndex;
+  try{
+    const grand = computeEOY(null, null, per);
+    note.textContent = `Berdasarkan data s/d ${formatPeriodLabel(per)}` + (md.comparisonsAreSynthetic ? ' · * data contoh (demo)' : '');
+    renderEOYPanel('eoyPanelReport', 'Semua Marketing', grand);
+
+    head.innerHTML = `<tr><th>Marketing Category / Type</th><th>YTD Est. Closing</th><th>Rata-rata / Bulan</th><th>Est. Closing EOY</th><th>Target Tahunan</th><th>Gap EOY</th><th>Achv EOY %</th></tr>`;
+    const cats = [];
+    idx.DATA.forEach(c => { let g = cats.find(x=>x.name===c.category); if(!g){ g={name:c.category, types:[]}; cats.push(g);} g.types.push(c); });
+    const row = (label, e, cls, indent) => `<tr class="${cls}"><td class="${indent?'indent':''}">${label}</td><td>${fmtIDR(e.ytd)}</td><td>${fmtIDR(e.avg)}</td><td>${fmtIDR(e.eoy)}</td><td>${e.yearlyTarget>0?fmtIDR(e.yearlyTarget):'-'}</td><td class="${e.yearlyTarget>0?(e.gap>=0?'gap-up':'gap-down'):''}">${e.yearlyTarget>0?(e.gap>=0?'▲ ':'▼ ')+fmtIDR(Math.abs(e.gap)):'-'}</td><td class="${e.ach===null?'':(e.ach>=100?'gap-up':'gap-down')}">${e.ach===null?'N/A':e.ach.toFixed(2)+'%'}</td></tr>`;
+    let html = '';
+    cats.forEach(g => {
+      const es = g.types.map(t => computeEOY(t.name, null, per));
+      if(g.name) html += row(g.name + ' Total', sumEOY(es), 'cat-row', false);
+      g.types.forEach((t,i) => { html += row(t.name, es[i], '', !!g.name); });
+    });
+    html += row('Grand Total', grand, 'total-row', false);
+    body.innerHTML = html;
+  } finally { periodsIndex = saved; }
+}
+
+/** Ambil semua periode Revenue (untuk source aktif), urut menaik, hitung
+ *  MoM growth & varians per bulan. Data persis sama dengan yang dipakai
+ *  halaman Revenue Dashboard (GRAND.target / GRAND.closing per periode). */
+function buildMonthlyOverview(sourceKey){
+  const revenueData = sourcesData[sourceKey] && sourcesData[sourceKey].revenue;
+  if(!revenueData) return { months: [], isSynthetic:false, isEmpty:false };
+  const periods = Object.keys(revenueData.periodsIndex).sort();
+  const months = periods.map((p, i) => {
+    const g = revenueData.periodsIndex[p].GRAND;
+    const actual = g.closing, target = g.target;
+    const prevActual = i > 0 ? revenueData.periodsIndex[periods[i-1]].GRAND.closing : null;
+    const momGrowth = (prevActual !== null && prevActual !== 0) ? ((actual - prevActual) / prevActual) * 100 : null;
+    return {
+      period: p, label: formatPeriodLabel(p),
+      actual, target, momGrowth,
+      variance: actual - target,
+      status: actual >= target ? 'met' : 'below',
+    };
+  });
+  return { months, isSynthetic: !!revenueData.comparisonsAreSynthetic, isEmpty: !!revenueData.isEmptyMetric };
+}
+
+/** Kelompokkan periode bulanan yang sama dengan di atas -> per tahun (jumlah
+ *  semua bulan yang ADA di data untuk tahun tsb — kalau baru 7 bulan yang
+ *  terisi di tahun berjalan, itu yang dijumlahkan, ditandai di tabel). */
+function buildYearlyOverview(sourceKey){
+  const revenueData = sourcesData[sourceKey] && sourcesData[sourceKey].revenue;
+  if(!revenueData) return { years: [], isSynthetic:false, isEmpty:false };
+  const periods = Object.keys(revenueData.periodsIndex).sort();
+  const byYear = new Map();
+  periods.forEach(p => {
+    const y = parsePeriod(p).y;
+    if(!byYear.has(y)) byYear.set(y, { actual:0, target:0, monthsCount:0, yearlyTarget:0, lastMonth:0 });
+    const g = revenueData.periodsIndex[p].GRAND;
+    const acc = byYear.get(y);
+    acc.actual += g.closing; acc.target += g.target; acc.monthsCount += 1;
+    if(g.yearlyTarget > 0) acc.yearlyTarget = g.yearlyTarget;   // periode terakhir yang terisi
+    acc.lastMonth = Math.max(acc.lastMonth, parsePeriod(p).m);
+  });
+  const years = Array.from(byYear.keys()).sort((a,b)=>a-b);
+  const yearRows = years.map((y, i) => {
+    const cur = byYear.get(y);
+    const prev = i > 0 ? byYear.get(years[i-1]) : null;
+    const yoyGrowth = (prev && prev.actual !== 0) ? ((cur.actual - prev.actual) / prev.actual) * 100 : null;
+    // Target tahunan: pakai kolom "Target Tahunan" kalau terisi, kalau tidak jumlah target bulanan
+    const target = cur.yearlyTarget > 0 ? cur.yearlyTarget : cur.target;
+    const achPct = target !== 0 ? (cur.actual / target) * 100 : 0;
+    // Proyeksi End of Year (run-rate): tahun lengkap = actual; tahun berjalan = YTD + rata-rata x sisa bulan
+    const remaining = 12 - cur.lastMonth;
+    const eoy = cur.actual + (cur.monthsCount > 0 ? (cur.actual / cur.monthsCount) * remaining : 0);
+    const eoyAch = target !== 0 ? (eoy / target) * 100 : 0;
+    return { year:y, actual:cur.actual, target, monthsCount:cur.monthsCount, yoyGrowth, achPct, eoy, eoyAch };
+  });
+  return { years: yearRows, isSynthetic: !!revenueData.comparisonsAreSynthetic, isEmpty: !!revenueData.isEmptyMetric };
+}
+
+function renderMonthlyReport(){
+  const overview = buildMonthlyOverview(state.source);
+  const months = overview.months;
+  const note = document.getElementById('monthlyReportNote');
+  note.textContent = overview.isSynthetic
+    ? '* data historis contoh (demo)'
+    : overview.isEmpty
+      ? 'Belum ada data Revenue untuk source ini'
+      : `${months.length} bulan tersedia`;
+
+  const kpiGrid = document.getElementById('monthlyKpiGrid');
+  if(!months.length){
+    kpiGrid.innerHTML = `<div class="kpi-card"><div class="kpi-label">Info</div><div class="kpi-value" style="font-size:14px;">Belum ada data periode.</div></div>`;
+    document.getElementById('monthlyTableHead').innerHTML = '';
+    document.getElementById('monthlyTableBody').innerHTML = '';
+    return;
+  }
+
+  const latest = months[months.length - 1];
+  const cards = [
+    { label:'Total Revenue Actual', value: fmtIDR(latest.actual,false), accent:'var(--teal)' },
+    { label:'Target', value: fmtIDR(latest.target,false), accent:'var(--amber)' },
+    { label:'MoM Growth', value: latest.momGrowth===null?'N/A':pct(latest.momGrowth), accent: latest.momGrowth===null?'var(--muted-2)':(latest.momGrowth>=0?'var(--green)':'var(--red)') },
+    { label:'Varians (Rp)', value: (latest.variance>=0?'+':'') + fmtIDR(latest.variance,false), accent: latest.variance>=0?'var(--green)':'var(--red)' },
+  ];
+  kpiGrid.innerHTML = cards.map(c => `
+    <div class="kpi-card">
+      <div class="accent-bar" style="background:${c.accent}"></div>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+    </div>
+  `).join('') + `
+    <div class="kpi-card">
+      <div class="accent-bar" style="background:${latest.status==='met'?'var(--green)':'var(--red)'}"></div>
+      <div class="kpi-label">Status Pencapaian (${latest.label})</div>
+      <div class="kpi-value" style="font-size:17px; padding-top:2px;"><span class="status-pill ${latest.status}">${latest.status==='met'?'✓ Target Met':'✕ Below Target'}</span></div>
+    </div>
+  `;
+
+  renderMonthlyTableGrouped(months);
+}
+
+/** Set tahun yang sedang di-expand di tabel bulanan. Default (pertama kali
+ *  render) cuma tahun terbaru yang terbuka, supaya tabel tidak langsung
+ *  panjang — sisanya tinggal klik baris tahun untuk buka/tutup (+/-). */
+let expandedYears = new Set();
+
+function renderMonthlyTableGrouped(months){
+  const head = document.getElementById('monthlyTableHead');
+  const body = document.getElementById('monthlyTableBody');
+  head.innerHTML = `<tr><th>Bulan</th><th>Actual</th><th>Target</th><th>MoM %</th><th>Varians</th><th>Status</th></tr>`;
+
+  const byYear = new Map();
+  months.forEach(m => {
+    const y = parsePeriod(m.period).y;
+    if(!byYear.has(y)) byYear.set(y, []);
+    byYear.get(y).push(m);
+  });
+  const years = Array.from(byYear.keys()).sort((a,b) => b - a); // terbaru duluan
+
+  if(expandedYears.size === 0 && years.length){
+    expandedYears.add(years[0]); // default: hanya tahun terbaru terbuka
+  }
+
+  const yearlyByYear = new Map(buildYearlyOverview(state.source).years.map(y => [y.year, y]));
+
+  let html = '';
+  years.forEach(y => {
+    const yearMonths = byYear.get(y).slice().sort((a,b) => b.period.localeCompare(a.period));
+    const yAgg = yearlyByYear.get(y);
+    const isExpanded = expandedYears.has(y);
+    const variance = yAgg ? (yAgg.actual - yAgg.target) : 0;
+    const status = yAgg && yAgg.actual >= yAgg.target ? 'met' : 'below';
+
+    html += `
+      <tr class="year-group-row" data-year="${y}">
+        <td><span class="year-toggle-icon">${isExpanded ? '−' : '+'}</span><b>${y}</b> <span class="year-month-count">(${yearMonths.length} bln)</span></td>
+        <td>${yAgg ? fmtIDR(yAgg.actual,false) : '-'}</td>
+        <td>${yAgg ? fmtIDR(yAgg.target,false) : '-'}</td>
+        <td>${yAgg && yAgg.yoyGrowth!==null ? pct(yAgg.yoyGrowth) : 'N/A'}</td>
+        <td class="${variance>=0?'gap-up':'gap-down'}">${yAgg ? (variance>=0?'+':'')+fmtIDR(variance,false) : '-'}</td>
+        <td><span class="status-pill ${status}">${status==='met'?'Target Met':'Below Target'}</span></td>
+      </tr>`;
+
+    if(isExpanded){
+      yearMonths.forEach(m => {
+        html += `
+      <tr class="month-detail-row">
+        <td>${m.label}</td>
+        <td>${fmtIDR(m.actual,false)}</td>
+        <td>${fmtIDR(m.target,false)}</td>
+        <td class="${m.momGrowth===null?'':(m.momGrowth>=0?'gap-up':'gap-down')}">${m.momGrowth===null?'N/A':pct(m.momGrowth)}</td>
+        <td class="${m.variance>=0?'gap-up':'gap-down'}">${(m.variance>=0?'+':'')+fmtIDR(m.variance,false)}</td>
+        <td><span class="status-pill ${m.status}">${m.status==='met'?'Target Met':'Below Target'}</span></td>
+      </tr>`;
+      });
+    }
+  });
+  body.innerHTML = html;
+
+  body.querySelectorAll('.year-group-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const y = +row.dataset.year;
+      if(expandedYears.has(y)) expandedYears.delete(y);
+      else expandedYears.add(y);
+      renderMonthlyTableGrouped(months);
+    });
+  });
+}
+
+function renderYearlyReport(){
+  const overview = buildYearlyOverview(state.source);
+  const years = overview.years;
+  const note = document.getElementById('yearlyReportNote');
+  note.textContent = overview.isSynthetic
+    ? '* data historis contoh (demo)'
+    : overview.isEmpty
+      ? 'Belum ada data Revenue untuk source ini'
+      : `${years.length} tahun tersedia (agregat dari bulan yang ada di sheet)`;
+
+  const kpiGrid = document.getElementById('yearlyKpiGrid');
+  if(!years.length){
+    kpiGrid.innerHTML = `<div class="kpi-card"><div class="kpi-label">Info</div><div class="kpi-value" style="font-size:14px;">Belum ada data periode.</div></div>`;
+    document.getElementById('yearlyTableHead').innerHTML = '';
+    document.getElementById('yearlyTableBody').innerHTML = '';
+    return;
+  }
+
+  const latest = years[years.length - 1];
+  const cards = [
+    { label:`Total Revenue ${latest.year}`, value: fmtIDR(latest.actual,false), accent:'var(--teal)' },
+    { label:'Target Tahunan', value: fmtIDR(latest.target,false), accent:'var(--amber)' },
+    { label:'YoY Growth', value: latest.yoyGrowth===null?'N/A':pct(latest.yoyGrowth), accent: latest.yoyGrowth===null?'var(--muted-2)':(latest.yoyGrowth>=0?'var(--green)':'var(--red)') },
+    { label:'Achievement %', value: latest.achPct.toFixed(2)+'%', accent: latest.achPct>=100?'var(--green)':'var(--red)' },
+    { label:`Est. Closing EOY ${latest.year}`, value: fmtIDR(latest.eoy,false), accent:'var(--teal)' },
+  ];
+  kpiGrid.innerHTML = cards.map(c => `
+    <div class="kpi-card">
+      <div class="accent-bar" style="background:${c.accent}"></div>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('yearlyTableHead').innerHTML = `<tr><th>Tahun</th><th>Actual (YTD)</th><th>Target Tahunan</th><th>YoY %</th><th>Achievement %</th><th>Est. Closing EOY</th><th>Achv EOY %</th></tr>`;
+  document.getElementById('yearlyTableBody').innerHTML = years.slice().reverse().map(y => `
+    <tr>
+      <td>${y.year}${y.monthsCount<12 ? ` <span style="color:var(--muted-2); font-size:11px;">(${y.monthsCount} bln)</span>` : ''}</td>
+      <td>${fmtIDR(y.actual,false)}</td>
+      <td>${fmtIDR(y.target,false)}</td>
+      <td class="${y.yoyGrowth===null?'':(y.yoyGrowth>=0?'gap-up':'gap-down')}">${y.yoyGrowth===null?'N/A':pct(y.yoyGrowth)}</td>
+      <td class="${y.achPct>=100?'gap-up':'gap-down'}">${y.achPct.toFixed(2)}%</td>
+      <td>${fmtIDR(y.eoy,false)}</td>
+      <td class="${y.eoyAch>=100?'gap-up':'gap-down'}">${y.eoyAch.toFixed(2)}%</td>
+    </tr>
+  `).join('');
+}
+
+/* ---------- Chart generik (bar & line) yang dipakai Report Overview ---------- */
+function renderGenericBarChart(wrap, labels, series){
+  const W=900, H=320, marginL=78, marginR=16, marginT=16, marginB=50;
+  const plotW=W-marginL-marginR, plotH=H-marginT-marginB;
+  const n = labels.length;
+  const allVals = series.flatMap(s=>s.vals).filter(v=>v!==null && v!==undefined && !isNaN(v));
+  const maxVal = niceMax(Math.max(...allVals, 1) * 1.15);
+  const scaleY = v => plotH - (v/maxVal)*plotH;
+  const groupW = plotW/n;
+  const barCount = series.length;
+  const barW = Math.min(34, groupW*(0.6/barCount));
+  const barGap = 5;
+  const groupTotalW = barCount*barW + (barCount-1)*barGap;
+
+  let gridSVG = '';
+  const yTicks = 5;
+  for(let i=0;i<=yTicks;i++){
+    const val = maxVal*i/yTicks;
+    const y = marginT + scaleY(val);
+    gridSVG += `<line x1="${marginL}" y1="${y}" x2="${W-marginR}" y2="${y}" class="grid-line"/>`;
+    gridSVG += `<text x="${marginL-10}" y="${y+4}" text-anchor="end" class="axis-label" font-size="10.5">${fmtIDR(val)}</text>`;
+  }
+
+  let barsSVG = '', labelsSVG = '';
+  const tooltipData = [];
+  labels.forEach((lab, i) => {
+    const cx = marginL + groupW*i + groupW/2;
+    const startX = cx - groupTotalW/2;
+    let barsForGroup = '';
+    series.forEach((s, si) => {
+      const val = s.vals[i];
+      if(val===null || val===undefined) return;
+      const x = startX + si*(barW+barGap);
+      const y = marginT + scaleY(val);
+      const h = plotH - scaleY(val);
+      barsForGroup += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h,1)}" rx="4" fill="${s.color}" fill-opacity="0.9"></rect>`;
+    });
+    barsSVG += `<g class="bargroup" data-idx="${i}">${barsForGroup}</g>`;
+    const maxLen = n<=8 ? 16 : 10; const shortLab = lab.length>maxLen ? lab.slice(0,maxLen-1)+'…' : lab;
+    labelsSVG += `<text x="${cx}" y="${H-marginB+20}" text-anchor="middle" class="axis-label" font-size="11">${shortLab}</text>`;
+    tooltipData.push({ cx, label:lab, values: series.map(s=>({label:s.label, color:s.color, val:s.vals[i]})) });
+  });
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%; height:320px; display:block; overflow:visible;">
+      ${gridSVG}${barsSVG}${labelsSVG}
+      <line x1="${marginL}" y1="${marginT+plotH}" x2="${W-marginR}" y2="${marginT+plotH}" stroke="#20262F" stroke-width="1"/>
+    </svg>
+    <div class="chart-tooltip" id="genericTooltip_${wrap.id}"></div>
+  `;
+  _wireGenericBarTooltip(wrap, tooltipData, W);
+}
+
+function renderGenericLineChart(wrap, labels, series){
+  const W=900, H=320, marginL=78, marginR=16, marginT=16, marginB=50;
+  const plotW=W-marginL-marginR, plotH=H-marginT-marginB;
+  const n = labels.length;
+  const allVals = series.flatMap(s=>s.vals).filter(v=>v!==null && v!==undefined && !isNaN(v));
+  const maxVal = niceMax(Math.max(...allVals, 1) * 1.15);
+  const scaleY = v => plotH - (v/maxVal)*plotH;
+  const stepX = n>1 ? plotW/(n-1) : 0;
+  const xAt = i => marginL + (n>1 ? stepX*i : plotW/2);
+
+  let gridSVG = '';
+  const yTicks = 5;
+  for(let i=0;i<=yTicks;i++){
+    const val = maxVal*i/yTicks;
+    const y = marginT + scaleY(val);
+    gridSVG += `<line x1="${marginL}" y1="${y}" x2="${W-marginR}" y2="${y}" class="grid-line"/>`;
+    gridSVG += `<text x="${marginL-10}" y="${y+4}" text-anchor="end" class="axis-label" font-size="10.5">${fmtIDR(val)}</text>`;
+  }
+  let labelsSVG = '';
+  labels.forEach((lab, i) => {
+    const maxLen = n<=8 ? 16 : 10; const shortLab = lab.length>maxLen ? lab.slice(0,maxLen-1)+'…' : lab;
+    labelsSVG += `<text x="${xAt(i)}" y="${H-marginB+20}" text-anchor="middle" class="axis-label" font-size="11">${shortLab}</text>`;
+  });
+
+  let linesSVG = '';
+  series.forEach(s => {
+    let pathD = '', dotsSVG = '';
+    s.vals.forEach((v, i) => {
+      if(v===null || v===undefined) return;
+      const x = xAt(i), y = marginT + scaleY(v);
+      pathD += (pathD==='' ? `M${x},${y}` : ` L${x},${y}`);
+      dotsSVG += `<circle cx="${x}" cy="${y}" r="4" fill="${s.color}" stroke="#FFFFFF" stroke-width="2"></circle>`;
+    });
+    linesSVG += `<path d="${pathD}" fill="none" stroke="${s.color}" stroke-width="2.5"/>` + dotsSVG;
+  });
+
+  const tooltipData = labels.map((lab, i) => ({ cx:xAt(i), label:lab, values: series.map(s=>({label:s.label, color:s.color, val:s.vals[i]})) }));
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%; height:320px; display:block; overflow:visible;">
+      ${gridSVG}${linesSVG}${labelsSVG}
+      <line x1="${marginL}" y1="${marginT+plotH}" x2="${W-marginR}" y2="${marginT+plotH}" stroke="#20262F" stroke-width="1"/>
+    </svg>
+    <div class="chart-tooltip" id="genericTooltip_${wrap.id}"></div>
+  `;
+  _wireGenericLineTooltip(wrap, tooltipData, W);
+}
+
+function _showGenericTooltip(wrap, tooltip, d, W){
+  const rect = wrap.getBoundingClientRect();
+  const px = (d.cx/W) * rect.width;
+  tooltip.innerHTML = `<div class="tt-title">${d.label}</div>` + d.values.map(v => `
+    <div class="tt-row"><span style="color:${v.color}">${v.label}</span><b>&nbsp;${v.val===null||v.val===undefined?'N/A':fmtIDR(v.val,false)}</b></div>
+  `).join('');
+  tooltip.style.left = Math.min(Math.max(px-70,0), rect.width-170) + 'px';
+  tooltip.style.top = '4px';
+  tooltip.classList.add('show');
+}
+function _wireGenericBarTooltip(wrap, tooltipData, W){
+  const tooltip = document.getElementById(`genericTooltip_${wrap.id}`);
+  wrap.querySelectorAll('.bargroup').forEach(g => {
+    const idx = +g.dataset.idx;
+    const d = tooltipData[idx];
+    g.addEventListener('mousemove', ()=> _showGenericTooltip(wrap, tooltip, d, W));
+    g.addEventListener('mouseleave', ()=> tooltip.classList.remove('show'));
+  });
+}
+function _wireGenericLineTooltip(wrap, tooltipData, W){
+  const tooltip = document.getElementById(`genericTooltip_${wrap.id}`);
+  const svg = wrap.querySelector('svg');
+  svg.addEventListener('mousemove', (e) => {
+    const rect = svg.getBoundingClientRect();
+    const relX = (e.clientX-rect.left)/rect.width * W;
+    let nearest = tooltipData[0], minDist = Infinity;
+    tooltipData.forEach(d => { const dist = Math.abs(d.cx-relX); if(dist<minDist){ minDist=dist; nearest=d; } });
+    _showGenericTooltip(wrap, tooltip, nearest, W);
+  });
+  svg.addEventListener('mouseleave', ()=> tooltip.classList.remove('show'));
+}
+
+document.getElementById('refreshBtn').addEventListener('click', ()=> loadData(true));
+
+function setupAutoRefresh(){
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+  const mins = Number(SHEET_CONFIG.autoRefreshMinutes) || 0;
+  if(mins > 0){
+    autoRefreshTimer = setInterval(()=> loadData(false), mins*60*1000);
+  }
+}
+
+loadData(false).then(setupAutoRefresh).catch(e => { console.error('[bootstrap] fatal:', e); showFatalError(e); });
+
+</script>
+</body>
+</html>
