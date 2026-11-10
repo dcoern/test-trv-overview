@@ -1,4 +1,4 @@
-/* ========================================================================
+/* =========================================================================
    Konten sheet-config.js DIGABUNG langsung di sini (inline) supaya file HTML
    ini 100% MANDIRI — tidak lagi bergantung pada file eksternal manapun untuk
    bisa tampil. Ini sengaja dibuat begini karena banyak tempat (preview di
@@ -41,7 +41,10 @@
      perhitungan End of Year (YTD) bisa jalan.
    - Marketing_category > Marketing_type > Business = hierarki pivot
      (mis. B2B > B2B2C > Mass Market). Nama Marketing_type harus unik.
-   - Target Tahunan: target SETAHUN penuh untuk Business tsb (nilai yang sama
+   - Target Tahunan (CARA 1, disarankan): buat tab TERPISAH bernama "TargetTahunan" dengan kolom
+     Tahun | Marketing_type | Business | Target Tahunan (1 baris per Business per tahun).
+     Kolom Marketing_type opsional (dipakai kalau nama Business ada di lebih dari satu Type).
+   - Target Tahunan (CARA 2, cadangan): kolom "Target Tahunan" di tab Marketing, target SETAHUN penuh untuk Business tsb (nilai yang sama
      boleh diulang di semua bulan pada tahun yang sama). Kalau kosong/0,
      proyeksi End of Year tetap dihitung tapi tanpa achievement vs target.
    - Baris Total (per Type / Category / Grand Total) TIDAK perlu ada di sheet;
@@ -74,10 +77,55 @@ const SHEET_CONFIG = {
     mtdTarget: "MTD Target",
     estimatedRevenue: "Estimated Revenue (IDR)",
     estimatedClosing: "Estimated Closing (IDR)",
-    yearlyTarget: "Target Tahunan",
+    yearlyTarget: "Target Tahunan",   // opsional: dipakai kalau tab TargetTahunan tidak ada
   },
 
-  channelColorPalette: ["#F87171", "#FBBF24", "#22D3EE", "#34D399", "#A78BFA", "#F472B6"],
+  // Tab TERPISAH untuk Target Tahunan per Business (disarankan).
+  // Kolom: Tahun | Marketing_type (opsional) | Business | Target Tahunan
+  // Kalau tab ini tidak ada/gagal dibaca, dashboard memakai kolom "Target Tahunan" di tab Marketing.
+  // Tab Sales League (Corporate & Wholesales). 1 baris = 1 sales x 1 bulan.
+  // Kalau tab tidak ada / belum diisi, halaman Sales League memakai data contoh (demo).
+  salesLeague: {
+    sheet: "SalesLeague",
+    // spreadsheetId: "",     // opsional: isi kalau Sales League memakai file Google Sheet TERPISAH
+    topN: 5,            // jumlah sales di "Best Performance"
+    remindN: 5,         // maksimum sales di "Reminder"
+    remindBelow: 80,    // KPI Score (%) di bawah ini = perlu reminder
+    // KPI Score = jumlah (bobot x skor komponen) / jumlah bobot komponen yang datanya ada
+    weights: { achievement: 70, churn: 10, activity: 20 },
+    achCap: 120,        // Achievement dihitung maksimal segini (%) dalam KPI Score
+    actCap: 100,        // Activity (FU pelanggan baru) dihitung maksimal segini (%) dalam KPI Score
+    columns: {
+      period: "Period",
+      name: "Nama Sales",
+      join: "Join Date",
+      unit: "Business Unit",
+      segment: "Segment",
+      arpu: "ARPU Tier",
+      region: "Regional/Kota",
+      asm: "ASM",                              // nama ASM (atasan langsung sales), opsional
+      targetNew: "Target New Acquisition",
+      targetMonthly: "Target Bulanan",        // New + Recurring. Target Recurring = Target Bulanan - Target New
+      targetRecurring: "Target Recurring",    // alternatif kalau tidak ada kolom Target Bulanan
+      actualNew: "Actual New Acquisition",
+      actualRecurring: "Actual Recurring",
+      targetFu: "Target FU Pelanggan Baru",   // opsional: target jumlah follow-up calon pelanggan baru per bulan
+      actualFu: "Actual FU Pelanggan Baru",   // opsional: realisasi follow-up
+      churn: "Churn (IDR)",                   // opsional
+      base: "Recurring Base (IDR)",           // opsional
+      targetChurn: "Target Churn %",          // opsional, mis. 2 atau 2%
+    },
+  },
+
+  yearlyTargetSheet: "TargetTahunan",
+  yearlyColumns: {
+    year: "Tahun",
+    type: "Marketing_type",
+    business: "Business",
+    target: "Target Tahunan",
+  },
+
+  channelColorPalette: ["#DC2626", "#D97706", "#0891B2", "#059669", "#7C3AED", "#DB2777"],
 };
 
 /* =========================================================================
@@ -343,12 +391,144 @@ function buildMetricsIndex(rows, config) {
  * gagal/tidak ada, source lain tetap lanjut berhasil.
  * Return: { youtube: {ok:true, metricsIndex} | {ok:false, error}, meta:{...}, tiktok:{...} }
  */
+/** Baca tab TargetTahunan -> { byTypeBusiness: Map("tahun||type||business"), byBusiness: Map("tahun||business") }.
+ *  Return null kalau tab tidak ada / kosong / kolom wajib tidak lengkap (dashboard lalu
+ *  memakai kolom "Target Tahunan" di tab Marketing). */
+function _isoDateFromSheet(v){
+  if(v === null || v === undefined || v === "") return "";
+  let d = null;
+  const m = String(v).match(/^Date\((\d+),(\d+),(\d+)/);
+  if(m) d = new Date(+m[1], +m[2], +m[3]);
+  else { const t = new Date(String(v).trim()); if(!isNaN(t)) d = t; }
+  if(!d) return "";
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+
+/** Baca tab SalesLeague -> array baris
+ *  { period,name,join,unit,segment,arpu,tNew,tRec,aNew,aRec,churn,base,tcPct }.
+ *  Hanya Business Unit Corporate & Wholesales yang dipakai. Return null kalau tab tidak ada/kosong/kolom kurang. */
+async function fetchLeagueRows(config) {
+  const lc = config.salesLeague;
+  if (!lc || !lc.sheet) return null;
+  const sid = lc.spreadsheetId || config.spreadsheetId;
+  if (!sid || sid.includes("PASTE_SPREADSHEET_ID")) return null;
+  try {
+    const res = await fetch(_buildSheetUrl({ ...config, spreadsheetId: sid }, lc.sheet));
+    if (!res.ok) return null;
+    const text = await res.text();
+    const m = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+    if (!m) return null;
+    const json = JSON.parse(m[1]);
+    if (json.status === "error" || !json.table) return null;
+    const labels = json.table.cols.map((c) => _normalizeHeader(c.label));
+    const ix = {};
+    Object.entries(lc.columns).forEach(([k, h]) => { ix[k] = labels.indexOf(_normalizeHeader(h)); });
+    const need = ["period","name","unit","targetNew","actualNew","actualRecurring"];
+    const miss = need.filter((k) => ix[k] < 0).map((k) => lc.columns[k]);
+    if (ix.targetMonthly < 0 && ix.targetRecurring < 0) miss.push(`${lc.columns.targetMonthly} (atau ${lc.columns.targetRecurring})`);
+    if (miss.length) { console.warn(`[sheet-config] Tab "${lc.sheet}" ada tapi kolom ini tidak ditemukan: ${miss.join(", ")} — Sales League memakai data contoh.`); return null; }
+    const hasChurn = ix.churn >= 0 && ix.base >= 0;
+    const hasFu = ix.targetFu >= 0 && ix.actualFu >= 0;
+    const out = [];
+    json.table.rows.forEach((row) => {
+      const cell = (k) => (ix[k] >= 0 && row.c[ix[k]] ? row.c[ix[k]] : null);
+      const v = (k) => { const c = cell(k); return c ? c.v : null; };
+      const period = _normalizePeriodString(v("period"));
+      const name = String(v("name") || "").trim();
+      const unitRaw = String(v("unit") || "").toLowerCase();
+      const unit = unitRaw.includes("corporate") ? "Corporate" : (unitRaw.includes("wholesale") ? "Wholesales" : "");
+      if (!period || !name || !unit) return;
+      const segRaw = String(v("segment") || "").toLowerCase();
+      const segment = unit === "Wholesales" ? "Wholesales" : (segRaw.includes("sam") ? "Corporate (SAM)" : "Corporate (Organic)");
+      const tNew = _toNumber(v("targetNew"));
+      const tRec = ix.targetMonthly >= 0 ? Math.max(0, _toNumber(v("targetMonthly")) - tNew) : _toNumber(v("targetRecurring"));
+      // Target Churn %: "2%" (sel berformat persen -> 0.02) atau angka 2 -> keduanya = 2 (persen)
+      let tcPct = null;
+      const tc = cell("targetChurn");
+      if (tc && tc.v !== null && tc.v !== "") {
+        const raw = _toNumber(tc.v);
+        tcPct = (typeof tc.f === "string" && tc.f.includes("%")) ? raw * 100 : raw;
+      }
+      out.push({
+        period, name, unit, segment,
+        join: _isoDateFromSheet(v("join")),
+        arpu: String(v("arpu") || "").trim(),
+        region: String(v("region") || "").trim(),
+        asm: String(v("asm") || "").trim(),
+        tNew, tRec, aNew: _toNumber(v("actualNew")), aRec: _toNumber(v("actualRecurring")),
+        tFu: hasFu ? _toNumber(v("targetFu")) : null, aFu: hasFu ? _toNumber(v("actualFu")) : null,
+        churn: hasChurn ? _toNumber(v("churn")) : null,
+        base: hasChurn ? _toNumber(v("base")) : null,
+        tcPct,
+      });
+    });
+    return out.length ? out : null;
+  } catch (e) {
+    console.warn("[sheet-config] Tab SalesLeague gagal dibaca:", e.message);
+    return null;
+  }
+}
+
+async function fetchYearlyTargets(config) {
+  if (!config.yearlyTargetSheet) return null;
+  try {
+    const res = await fetch(_buildSheetUrl(config, config.yearlyTargetSheet));
+    if (!res.ok) return null;
+    const text = await res.text();
+    const m = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+    if (!m) return null;
+    const json = JSON.parse(m[1]);
+    if (json.status === "error" || !json.table) return null;
+    const labels = json.table.cols.map((c) => _normalizeHeader(c.label));
+    const ix = (name) => labels.indexOf(_normalizeHeader(name));
+    const yc = config.yearlyColumns;
+    const iY = ix(yc.year), iB = ix(yc.business), iT = ix(yc.target), iType = ix(yc.type);
+    if (iY < 0 || iB < 0 || iT < 0) {
+      console.warn(`[sheet-config] Tab "${config.yearlyTargetSheet}" ada tapi kolom wajib (${yc.year}, ${yc.business}, ${yc.target}) tidak lengkap — pakai kolom Target Tahunan di tab Marketing.`);
+      return null;
+    }
+    const byTypeBusiness = new Map(), byBusiness = new Map();
+    let n = 0;
+    json.table.rows.forEach((row) => {
+      const v = (i) => (i >= 0 && row.c[i] ? row.c[i].v : null);
+      const year = parseInt(String(v(iY)).replace(/[^0-9]/g, ""), 10);
+      const business = String(v(iB) || "").trim();
+      const target = _toNumber(v(iT));
+      if (!year || !business) return;
+      const type = iType >= 0 ? String(v(iType) || "").trim() : "";
+      if (type) byTypeBusiness.set(`${year}||${type}||${business}`, target);
+      byBusiness.set(`${year}||${business}`, target);
+      n++;
+    });
+    return n > 0 ? { byTypeBusiness, byBusiness, count: n } : null;
+  } catch (e) {
+    console.warn("[sheet-config] Tab TargetTahunan gagal dibaca:", e.message);
+    return null;
+  }
+}
+
+/** Timpa row.yearlyTarget dengan nilai dari tab TargetTahunan (cocok per tahun + type + business). */
+function applyYearlyTargets(rows, yt) {
+  if (!yt) return 0;
+  let matched = 0;
+  rows.forEach((r) => {
+    const y = parsePeriod(r.period).y;
+    if (!y) return;
+    let v = yt.byTypeBusiness.get(`${y}||${r.groupChannel}||${r.groupUnitBusiness}`);
+    if (v === undefined) v = yt.byBusiness.get(`${y}||${r.groupUnitBusiness}`);
+    if (v !== undefined) { r.yearlyTarget = v; matched++; }
+  });
+  return matched;
+}
+
 async function loadAllSourcesFromSheet(config = SHEET_CONFIG) {
   const entries = Object.entries(config.sourceSheets);
   const results = {};
+  const yearlyTargets = await fetchYearlyTargets(config);
   await Promise.all(entries.map(async ([source, sheetName]) => {
     try {
       const rows = await fetchSheetRows(config, sheetName);
+      applyYearlyTargets(rows, yearlyTargets);
       results[source] = { ok: true, metricsIndex: buildMetricsIndex(rows, config) };
     } catch (e) {
       results[source] = { ok: false, error: e.message };
